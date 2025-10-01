@@ -13,10 +13,8 @@ interface VideoResultProps {
 export function VideoResult({ videoData, onReset }: VideoResultProps) {
   const { videoInfo, transcript, analysis, processingStatus, error } = videoData;
   
-  // Placeholder function for jumping to specific times in the video
   const handleJumpToTime = (timestamp: number) => {
     console.log(`Jump to time: ${timestamp} seconds`);
-    // TODO: Implement video player integration
   };
   const hasTranscript = transcript && transcript.length > 0;
   const isAnalyzing = processingStatus === 'analyzing';

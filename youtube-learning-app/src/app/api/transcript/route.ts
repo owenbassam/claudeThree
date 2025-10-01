@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract video ID from URL
     const videoId = extractVideoId(url);
     if (!videoId) {
       return NextResponse.json(
@@ -39,26 +38,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Processing video: ${videoId}`);
-
-    // Get video info first
     const videoInfo = await getVideoInfo(videoId);
-    console.log(`Video info:`, videoInfo);
-
-    // Extract transcript using yt-dlp
-    console.log('Extracting transcript with yt-dlp...');
     const transcriptResult = await extractTranscript(url);
     
     if (transcriptResult.success && transcriptResult.segments.length > 0) {
-      // Convert transcript segments to expected format
       const transcript = transcriptResult.segments.map((segment: { text: string; start: number; end: number }) => ({
         text: segment.text,
         start: segment.start,
         end: segment.end,
         duration: segment.end - segment.start
       }));
-
-      console.log(`Successfully extracted ${transcript.length} transcript segments using yt-dlp`);
 
       return NextResponse.json({
         videoInfo,
@@ -69,8 +58,6 @@ export async function POST(request: NextRequest) {
         method: 'yt-dlp'
       });
     } else {
-      console.error('Transcript extraction failed:', transcriptResult.error);
-      
       return NextResponse.json({
         videoInfo,
         transcript: [],
@@ -82,7 +69,6 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('API error:', error);
     return NextResponse.json(
       { error: 'Failed to process video' },
       { status: 500 }
@@ -92,7 +78,6 @@ export async function POST(request: NextRequest) {
 
 async function getVideoInfo(videoId: string): Promise<VideoInfo> {
   try {
-    // Use YouTube oEmbed API for basic video info
     const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
     const response = await fetch(oembedUrl);
     
@@ -105,14 +90,12 @@ async function getVideoInfo(videoId: string): Promise<VideoInfo> {
     return {
       id: videoId,
       title: data.title || 'Unknown Title',
-      description: '', // oEmbed doesn't provide description
+      description: '',
       thumbnailUrl: data.thumbnail_url,
       channelName: data.author_name,
       url: `https://www.youtube.com/watch?v=${videoId}`
     };
   } catch (error) {
-    console.error('Error fetching video info:', error);
-    // Return minimal info if API fails
     return {
       id: videoId,
       title: 'YouTube Video',

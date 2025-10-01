@@ -20,23 +20,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Starting analysis for video: "${videoTitle}" with ${transcript.length} segments`);
-
     try {
-      // Analyze transcript with Claude via Bedrock
       const analysis = await analyzeTranscriptWithClaude(transcript, videoTitle);
       
-      // Fix any duplicate answer choices in quiz questions
       const fixedQuizQuestions = (analysis.quizQuestions || []).map((question: any) => {
         if (!question.options || !Array.isArray(question.options)) {
           return question;
         }
         
-        // Check for duplicates
         const uniqueOptions = new Set(question.options);
         if (uniqueOptions.size < question.options.length) {
-          console.warn(`Duplicate answer choices detected in question: "${question.question}"`);
-          // Keep unique options and pad with placeholder if needed
           const unique = Array.from(uniqueOptions);
           while (unique.length < 4) {
             unique.push(`Option ${unique.length + 1}`);
@@ -70,9 +63,6 @@ export async function POST(request: NextRequest) {
       });
 
     } catch (analysisError) {
-      console.error('Claude analysis error:', analysisError);
-      
-      // Return a fallback demo analysis if Claude fails
       const fallbackAnalysis = createFallbackAnalysis(videoTitle, transcript);
       
       return NextResponse.json({
@@ -83,7 +73,6 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('Analysis API error:', error);
     return NextResponse.json(
       { error: 'Failed to analyze transcript' },
       { status: 500 }
