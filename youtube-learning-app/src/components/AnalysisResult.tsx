@@ -104,28 +104,6 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: An
         </div>
       </div>
 
-      {/* Key Concepts */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Brain className="w-5 h-5 text-green-600" />
-          Key Concepts
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {analysis.keyConcepts.map((concept, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-semibold text-gray-900">{concept.term}</h4>
-                <span className="text-sm text-green-600 font-mono">
-                  {formatTime(concept.timestamp)}
-                </span>
-              </div>
-              <p className="text-gray-700 text-sm mb-2">{concept.definition}</p>
-              <p className="text-gray-600 text-xs italic">{concept.context}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Quiz Questions Preview */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">

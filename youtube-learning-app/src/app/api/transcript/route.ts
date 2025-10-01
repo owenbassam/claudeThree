@@ -78,28 +78,58 @@ export async function POST(request: NextRequest) {
 
 async function getVideoInfo(videoId: string): Promise<VideoInfo> {
   try {
-    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-    const response = await fetch(oembedUrl);
+    // Use yt-dlp to get video metadata including duration
+    const { spawn } = require('child_process');
     
-    if (!response.ok) {
-      throw new Error(`oEmbed API failed: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
+    const videoInfo = await new Promise<any>((resolve, reject) => {
+      const ytDlp = spawn('yt-dlp', [
+        '--dump-json',
+        '--no-warnings',
+        `https://www.youtube.com/watch?v=${videoId}`
+      ]);
+
+      let stdout = '';
+      let stderr = '';
+
+      ytDlp.stdout.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
+
+      ytDlp.stderr.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+
+      ytDlp.on('close', (code: number) => {
+        if (code === 0) {
+          try {
+            const data = JSON.parse(stdout);
+            resolve(data);
+          } catch (e) {
+            reject(new Error('Failed to parse video info'));
+          }
+        } else {
+          reject(new Error(`yt-dlp failed: ${stderr}`));
+        }
+      });
+    });
+
     return {
       id: videoId,
-      title: data.title || 'Unknown Title',
-      description: '',
-      thumbnailUrl: data.thumbnail_url,
-      channelName: data.author_name,
+      title: videoInfo.title || 'Unknown Title',
+      description: videoInfo.description || '',
+      duration: videoInfo.duration || 0,
+      thumbnailUrl: videoInfo.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      channelName: videoInfo.uploader || videoInfo.channel || 'Unknown',
       url: `https://www.youtube.com/watch?v=${videoId}`
     };
   } catch (error) {
+    console.error('Error fetching video info:', error);
     return {
       id: videoId,
       title: 'YouTube Video',
       description: '',
+      duration: 0,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
       channelName: 'Unknown',
       url: `https://www.youtube.com/watch?v=${videoId}`
     };

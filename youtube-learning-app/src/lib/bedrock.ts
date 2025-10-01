@@ -31,7 +31,7 @@ export async function invokeClaude(
   temperature: number = 0.1
 ): Promise<string> {
   try {
-    const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+    const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-sonnet-4-5-20250929-v1:0';
     
     const payload = {
       anthropic_version: 'bedrock-2023-05-31',

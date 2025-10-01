@@ -1,9 +1,13 @@
 'use client';
 
+import { useState, useRef } from 'react';
 import { VideoData } from '@/types';
 import { Clock, FileText, AlertTriangle, CheckCircle, Loader2, Brain } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 import { AnalysisResult } from './AnalysisResult';
+import { VideoPlayer } from './VideoPlayer';
+import { ChapterNavigation } from './ChapterNavigation';
+import { KeyConcepts } from './KeyConcepts';
 
 interface VideoResultProps {
   videoData: VideoData;
@@ -12,13 +16,23 @@ interface VideoResultProps {
 
 export function VideoResult({ videoData, onReset }: VideoResultProps) {
   const { videoInfo, transcript, analysis, processingStatus, error } = videoData;
+  const [currentTime, setCurrentTime] = useState(0);
+  const videoPlayerRef = useRef<any>(null);
   
   const handleJumpToTime = (timestamp: number) => {
-    console.log(`Jump to time: ${timestamp} seconds`);
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.seekTo(timestamp);
+    }
   };
+
+  const handleTimeUpdate = (time: number) => {
+    setCurrentTime(time);
+  };
+  
   const hasTranscript = transcript && transcript.length > 0;
   const isAnalyzing = processingStatus === 'analyzing';
   const isComplete = processingStatus === 'complete' && analysis;
+  const hasChapters = analysis && analysis.chapters && analysis.chapters.length > 0;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -34,22 +48,31 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
           </button>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="md:w-1/3">
-            <img
-              src={videoInfo.thumbnailUrl}
-              alt={videoInfo.title}
-              className="w-full rounded-lg shadow-md"
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Video Player Section */}
+          <div className="space-y-4">
+            <VideoPlayer
+              ref={videoPlayerRef}
+              url={videoInfo.url}
+              transcript={hasTranscript ? transcript : undefined}
+              onTimeUpdate={handleTimeUpdate}
+              className="w-full"
             />
           </div>
           
-          <div className="md:w-2/3 space-y-3">
+          {/* Video Details Section */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2 text-gray-600">
               <span className="font-medium">Channel:</span>
               <span>{videoInfo.channelName}</span>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>Duration: {videoInfo.duration ? formatTime(videoInfo.duration) : 'Loading...'}</span>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-4">
               {hasTranscript ? (
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircle className="w-4 h-4" />
@@ -86,6 +109,32 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
           </div>
         </div>
       </div>
+
+      {/* Interactive Learning Features - Show when analysis is complete */}
+      {isComplete && analysis && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chapter Navigation */}
+          {hasChapters && (
+            <div className="lg:col-span-1">
+              <ChapterNavigation
+                chapters={analysis.chapters}
+                currentTime={currentTime}
+                onJumpToTime={handleJumpToTime}
+              />
+            </div>
+          )}
+          
+          {/* Key Concepts */}
+          {analysis.keyConcepts && analysis.keyConcepts.length > 0 && (
+            <div className={hasChapters ? "lg:col-span-2" : "lg:col-span-3"}>
+              <KeyConcepts
+                concepts={analysis.keyConcepts}
+                onJumpToTime={handleJumpToTime}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* AI Analysis Results */}
       {isComplete && analysis && (

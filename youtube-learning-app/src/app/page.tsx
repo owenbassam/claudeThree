@@ -52,7 +52,7 @@ export default function Home() {
             <Brain className="h-10 w-10 text-indigo-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">AI-Powered Analysis</h3>
             <p className="text-gray-600">
-              Claude 4.5 analyzes video transcripts to extract key concepts and generate practice questions.
+              Claude 4.5 Sonnet analyzes video transcripts to extract key concepts and generate practice questions.
             </p>
           </div>
           
@@ -75,7 +75,7 @@ export default function Home() {
 
         {/* Footer */}
         <div className="text-center mt-16 text-gray-500">
-          <p>Powered by Claude 4.5 AI • Built for better learning experiences</p>
+          <p>Powered by Claude 4.5 Sonnet AI • Built for better learning experiences</p>
         </div>
       </div>
     </div>
