@@ -127,7 +127,46 @@ Let me know when you're done watching!`;
         break;
 
       case ConversationPhase.WATCHING:
-        // User finished watching, now evaluate their understanding
+        // User says they finished watching - ask them a comprehension question
+        const chapterToAsk = analysis.chapters[conversationState.currentChapterIndex];
+        
+        // Check if user is just saying "done" or similar
+        const isDoneMessage = /^(done|finished|i'm done|im done|ready|watched|ok|okay)$/i.test(userAnswer.trim());
+        
+        if (isDoneMessage) {
+          // They just said they're done - now ask the comprehension question
+          const comprehensionPrompt = `The student just finished watching "${chapterToAsk.title}" (${formatTime(chapterToAsk.startTime)} to ${formatTime(chapterToAsk.endTime)}).
+
+Chapter summary: ${chapterToAsk.summary}
+Key points: ${chapterToAsk.keyPoints.join(', ')}
+
+Generate a specific comprehension question about this chapter. Ask them to:
+- Explain a key concept in their own words
+- Describe why something is important
+- Connect ideas from the chapter
+
+Be specific and test real understanding, not just recall.`;
+
+          aiResponse = await callClaude(comprehensionPrompt, updatedMessages);
+          
+          evaluation = {
+            score: 100,
+            passed: true,
+            strengths: [],
+            weaknesses: [],
+            misconceptions: [],
+            needsFollowUp: false,
+            nextPhase: ConversationPhase.POST_WATCH,
+            canProceed: false,
+            feedback: 'Asking comprehension question'
+          };
+          
+          nextPhase = ConversationPhase.POST_WATCH;
+          updatedState = { phase: ConversationPhase.POST_WATCH };
+          break;
+        }
+        
+        // They gave an actual answer - evaluate it
         const chapterToEvaluate = analysis.chapters[conversationState.currentChapterIndex];
         const postWatchPrompt = generatePostWatchPrompt(
           chapterToEvaluate,
@@ -220,12 +259,16 @@ Let me know when you're done watching!`;
           };
         } else {
           // Needs review - rewatch
+          const focusPoints = evaluation.weaknesses.length > 0 
+            ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
+            : `• ${chapterToEvaluate.keyPoints[0] || 'the main concepts'}`;
+          
           aiResponse = `I can see you're working hard, but let's review this section together.
 
 ${evaluation.feedback}
 
 Try rewatching ${formatTime(chapterToEvaluate.startTime)} to ${formatTime(chapterToEvaluate.endTime)} and focus on:
-${evaluation.weaknesses.map(w => `• ${w}`).join('\n')}
+${focusPoints}
 
 Let me know when you're ready to try again!`;
 
@@ -234,6 +277,106 @@ Let me know when you're ready to try again!`;
           updatedState = {
             phase: ConversationPhase.REVIEW
           };
+        }
+        break;
+
+      case ConversationPhase.POST_WATCH:
+        // User answered the comprehension question - now evaluate it
+        const postWatchChapter = analysis.chapters[conversationState.currentChapterIndex];
+        const evaluatePrompt = generatePostWatchPrompt(
+          postWatchChapter,
+          userAnswer,
+          updatedMessages
+        );
+
+        const postWatchEval = await callClaudeForEvaluation(evaluatePrompt, updatedMessages);
+        evaluation = postWatchEval;
+        
+        // Same logic as WATCHING phase after evaluation
+        if (evaluation.score >= 70) {
+          // PASSED!
+          const checkpoint: Checkpoint = {
+            id: `cp_${now}`,
+            chapterId: postWatchChapter.title,
+            chapterIndex: conversationState.currentChapterIndex,
+            passed: true,
+            score: evaluation.score,
+            questionsAsked: updatedMessages.filter(m => m.role === 'ai').length,
+            hintsUsed: conversationState.userProfile.hintsUsedTotal,
+            timestamp: now,
+            feedback: evaluation.feedback
+          };
+
+          const nextChapterIndex = conversationState.currentChapterIndex + 1;
+          const hasMoreChapters = nextChapterIndex < analysis.chapters.length;
+
+          if (hasMoreChapters) {
+            const nextChapter = analysis.chapters[nextChapterIndex];
+            aiResponse = generateCheckpointPrompt(postWatchChapter, evaluation.score, nextChapter);
+            nextPhase = ConversationPhase.CHECKPOINT;
+            
+            updatedState = {
+              phase: ConversationPhase.CHECKPOINT,
+              unlockedChapters: [...conversationState.unlockedChapters, nextChapterIndex],
+              chapterScores: {
+                ...conversationState.chapterScores,
+                [conversationState.currentChapterIndex]: evaluation.score
+              },
+              checkpoints: [...conversationState.checkpoints, checkpoint],
+              userProfile: {
+                ...conversationState.userProfile,
+                overallComprehension: calculateAverageScore({
+                  ...conversationState.chapterScores,
+                  [conversationState.currentChapterIndex]: evaluation.score
+                }),
+                responseQuality: evaluation.score >= 85 ? 'excellent' : 
+                                evaluation.score >= 70 ? 'adequate' : 'struggling'
+              }
+            };
+          } else {
+            aiResponse = generateCheckpointPrompt(postWatchChapter, evaluation.score);
+            nextPhase = ConversationPhase.COMPLETE;
+            updatedState = { phase: ConversationPhase.COMPLETE };
+          }
+        } else if (evaluation.score >= 50) {
+          // Needs follow-up
+          const followUpPrompt = generateFollowUpPrompt(
+            postWatchChapter,
+            userAnswer,
+            evaluation.weaknesses,
+            evaluation.misconceptions
+          );
+          
+          aiResponse = await callClaude(followUpPrompt, updatedMessages);
+          nextPhase = ConversationPhase.FOLLOW_UP;
+          
+          updatedState = {
+            phase: ConversationPhase.FOLLOW_UP,
+            userProfile: {
+              ...conversationState.userProfile,
+              misconceptions: [
+                ...conversationState.userProfile.misconceptions,
+                ...evaluation.misconceptions
+              ]
+            }
+          };
+        } else {
+          // Needs review
+          const focusPoints = evaluation.weaknesses.length > 0 
+            ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
+            : `• ${postWatchChapter.keyPoints[0] || 'the main concepts'}`;
+          
+          aiResponse = `I can see you're working hard, but let's review this section together.
+
+${evaluation.feedback}
+
+Try rewatching ${formatTime(postWatchChapter.startTime)} to ${formatTime(postWatchChapter.endTime)} and focus on:
+${focusPoints}
+
+Let me know when you're ready to try again!`;
+
+          nextPhase = ConversationPhase.REVIEW;
+          updatedState = { phase: ConversationPhase.REVIEW };
         }
         break;
 
