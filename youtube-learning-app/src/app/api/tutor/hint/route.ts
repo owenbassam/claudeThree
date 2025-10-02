@@ -64,12 +64,12 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: [{ text: hintPrompt }]
+          content: [{ text: hintPrompt + '\n\nProvide ONLY the hint text - no JSON, no formatting, just a helpful hint.' }]
         }
       ],
       system: [
         { 
-          text: SOCRATIC_SYSTEM_PROMPT + '\n\nIMPORTANT: Provide a helpful hint but NEVER give the direct answer. Guide them to discover it themselves.' 
+          text: 'You are a Socratic tutor providing hints. Give helpful guidance but NEVER give the direct answer. Respond with ONLY plain text, no JSON formatting.' 
         }
       ],
       inferenceConfig: {
@@ -79,8 +79,11 @@ export async function POST(request: NextRequest) {
     });
 
     const response = await client.send(command);
-    const hintContent = response.output?.message?.content?.[0]?.text || 
-                        'Think about what we discussed earlier in the video.';
+    let hintContent = response.output?.message?.content?.[0]?.text || 
+                      'Think about what we discussed earlier in the video.';
+    
+    // Clean up any JSON artifacts
+    hintContent = cleanJsonArtifacts(hintContent);
 
     // Calculate score impact based on hint level
     const scoreImpact = hintLevel * 5; // 5, 10, 15, 20 points deducted
@@ -114,4 +117,26 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Clean up JSON artifacts from Claude's response
+ */
+function cleanJsonArtifacts(text: string): string {
+  // Remove JSON code blocks
+  text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  // Remove stray brackets at start/end
+  text = text.replace(/^\{\s*/g, '').replace(/\s*\}$/g, '');
+  
+  // Try to extract just the message content if it's JSON
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed.message) return parsed.message;
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  
+  return text.trim();
 }

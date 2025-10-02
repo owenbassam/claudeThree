@@ -51,23 +51,33 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: [{ text: prompt }]
+          content: [{ text: `Generate a brief, friendly greeting for a student about to learn about: ${topic}. Then ask what they already know about it. Keep it conversational, warm, and under 3 sentences. No JSON, just plain text.` }]
         }
       ],
       system: [
         {
-          text: `You are a friendly Socratic tutor. Generate a warm, conversational greeting and ask the user what they already know about ${topic}. Keep it natural and encouraging. Don't be formal or robotic.`
+          text: `You are a friendly Socratic tutor. Respond with ONLY plain text - no JSON, no formatting. Be warm and conversational.`
         }
       ],
       inferenceConfig: {
         temperature: 0.7,
-        maxTokens: 500,
+        maxTokens: 300,
       }
     });
 
     const response = await client.send(command);
-    const aiMessage = response.output?.message?.content?.[0]?.text || 
-                      "Hi! I'm excited to help you learn. What do you already know about this topic?";
+    let aiMessage = response.output?.message?.content?.[0]?.text || 
+                    "Hi! I'm excited to help you learn. What do you already know about this topic?";
+    
+    // Clean up any JSON artifacts
+    aiMessage = aiMessage.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    aiMessage = aiMessage.replace(/^\{\s*/g, '').replace(/\s*\}$/g, '');
+    try {
+      const parsed = JSON.parse(aiMessage);
+      if (parsed.message) aiMessage = parsed.message;
+    } catch {
+      // Not JSON, use as-is
+    }
 
     // Initialize conversation state
     const now = Date.now();

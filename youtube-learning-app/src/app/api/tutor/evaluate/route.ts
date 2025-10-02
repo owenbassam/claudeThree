@@ -390,9 +390,11 @@ Would you like a hint, or shall we try again after rewatching?`;
 }
 
 /**
- * Call Claude for general responses
+ * Call Claude for general responses (returns clean text only)
  */
 async function callClaude(prompt: string, conversationHistory: Message[]): Promise<string> {
+  const systemPrompt = `You are a friendly Socratic tutor. Respond ONLY with your question or message - NO JSON, NO formatting, just natural conversational text. Be warm, encouraging, and guide the student through questions.`;
+  
   const command = new ConverseCommand({
     modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
     messages: [
@@ -401,7 +403,7 @@ async function callClaude(prompt: string, conversationHistory: Message[]): Promi
         content: [{ text: prompt }]
       }
     ],
-    system: [{ text: SOCRATIC_SYSTEM_PROMPT }],
+    system: [{ text: systemPrompt }],
     inferenceConfig: {
       temperature: 0.7,
       maxTokens: 500,
@@ -409,8 +411,10 @@ async function callClaude(prompt: string, conversationHistory: Message[]): Promi
   });
 
   const response = await client.send(command);
-  return response.output?.message?.content?.[0]?.text || 
-         'I understand. Let\'s continue.';
+  const text = response.output?.message?.content?.[0]?.text || 'I understand. Let\'s continue.';
+  
+  // Clean up any JSON artifacts
+  return cleanJsonArtifacts(text);
 }
 
 /**
@@ -420,17 +424,32 @@ async function callClaudeForEvaluation(
   prompt: string,
   conversationHistory: Message[]
 ): Promise<EvaluationResult> {
+  const evaluationPrompt = `${prompt}
+
+Evaluate the student's answer and provide:
+1. A score from 0-100
+2. What they got right (strengths)
+3. What they missed (weaknesses)
+4. Any misconceptions
+5. Encouraging feedback
+
+Format: Start with "Score: X/100" then explain your evaluation naturally. Be encouraging!`;
+
   const command = new ConverseCommand({
     modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
     messages: [
       {
         role: 'user',
-        content: [{ text: prompt + '\n\nProvide your evaluation with a score (0-100), strengths, weaknesses, misconceptions, and encouraging feedback.' }]
+        content: [{ text: evaluationPrompt }]
       }
     ],
-    system: [{ text: SOCRATIC_SYSTEM_PROMPT }],
+    system: [
+      { 
+        text: 'You are a Socratic tutor evaluating student understanding. Provide clear scores and feedback. Be specific about what they got right and wrong. Always be encouraging.' 
+      }
+    ],
     inferenceConfig: {
-      temperature: 0.3, // Lower temp for more consistent evaluation
+      temperature: 0.3,
       maxTokens: 800,
     }
   });
@@ -439,7 +458,6 @@ async function callClaudeForEvaluation(
   const text = response.output?.message?.content?.[0]?.text || '';
 
   // Parse Claude's response to extract evaluation
-  // Claude will provide structured feedback we can parse
   const evaluation = parseEvaluationFromText(text);
   
   return evaluation;
@@ -511,4 +529,26 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Clean up JSON artifacts from Claude's response
+ */
+function cleanJsonArtifacts(text: string): string {
+  // Remove JSON code blocks
+  text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  // Remove stray brackets at start/end
+  text = text.replace(/^\{\s*/g, '').replace(/\s*\}$/g, '');
+  
+  // Try to extract just the message content if it's JSON
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed.message) return parsed.message;
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  
+  return text.trim();
 }

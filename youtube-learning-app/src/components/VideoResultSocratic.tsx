@@ -98,29 +98,29 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
   if (isAnalyzing) {
     return (
       <div 
-        className="animate-fadeIn" 
+        className="animate-fadeIn flex items-center justify-center min-h-screen"
         style={{ 
-          maxWidth: 'var(--container-max-width)', 
-          margin: '0 auto',
           textAlign: 'center',
-          paddingTop: 'var(--space-16)'
+          padding: 'var(--space-4)'
         }}
       >
-        <Brain className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: 'var(--color-brand-primary)' }} />
-        <h2 style={{ 
-          fontSize: 'var(--font-size-xl)',
-          fontWeight: 700,
-          color: 'var(--color-text-primary)',
-          marginBottom: 'var(--space-2)'
-        }}>
-          Analyzing video...
-        </h2>
-        <p style={{ 
-          fontSize: 'var(--font-size-base)',
-          color: 'var(--color-text-secondary)'
-        }}>
-          Preparing your personalized learning experience
-        </p>
+        <div>
+          <Brain className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: 'var(--color-brand-primary)' }} />
+          <h2 style={{ 
+            fontSize: 'var(--font-size-xl)',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--space-2)'
+          }}>
+            Analyzing video...
+          </h2>
+          <p style={{ 
+            fontSize: 'var(--font-size-base)',
+            color: 'var(--color-text-secondary)'
+          }}>
+            Preparing your personalized learning experience
+          </p>
+        </div>
       </div>
     );
   }
