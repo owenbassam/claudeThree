@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "transcript-api/Dockerfile"
+dockerfilePath = "Dockerfile"
+watchPatterns = ["transcript-api/**"]
 
 [deploy]
 startCommand = "npm start"
