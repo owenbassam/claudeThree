@@ -54,9 +54,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }
   }, []);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     setPlaying(!playing);
-  };
+  }, [playing]);
 
   const skipSeconds = (seconds: number) => {
     const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
@@ -101,8 +101,6 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           volume={volume}
           onTimeUpdate={handleProgress}
           onLoadedMetadata={handleLoadedMetadata}
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
           controls={false}
         />
 

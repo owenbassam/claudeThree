@@ -140,7 +140,8 @@ async function getVideoInfo(videoId) {
           description: info.description,
           thumbnailUrl: info.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
           channelName: info.uploader || info.channel || 'Unknown',
-          duration: info.duration
+          duration: info.duration,
+          url: `https://www.youtube.com/watch?v=${videoId}`
         });
       } catch (error) {
         reject(new Error('Failed to parse video info'));
