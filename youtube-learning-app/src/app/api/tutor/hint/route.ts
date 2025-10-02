@@ -64,12 +64,12 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: [{ text: hintPrompt + '\n\nProvide ONLY the hint text - no JSON, no formatting, just a helpful hint.' }]
+          content: [{ text: hintPrompt + '\n\nYour response will be shown directly to the student as a hint. Write in smooth, conversational prose without any JSON, code blocks, or formatting markers. Be encouraging and helpful while preserving their sense of discovery.' }]
         }
       ],
       system: [
         { 
-          text: 'You are a Socratic tutor providing hints. Give helpful guidance but NEVER give the direct answer. Respond with ONLY plain text, no JSON formatting.' 
+          text: `You are a supportive Socratic tutor providing progressive hints. Your hint should guide the student toward understanding without giving away the answer directly. This preserves their learning journey and sense of discovery, which is crucial for deep comprehension. Write naturally as if speaking to a student who's working hard and needs a nudge in the right direction.` 
         }
       ],
       inferenceConfig: {

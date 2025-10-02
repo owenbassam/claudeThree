@@ -182,7 +182,7 @@ export function SocraticChat({
                 fontSize: 'var(--font-size-xs)',
                 color: 'var(--color-text-tertiary)'
               }}>
-                {conversationState.unlockedChapters.length} / {analysis.chapters.length} unlocked
+                Chapter {conversationState.currentChapterIndex + 1} of {analysis.chapters.length}
               </span>
             </div>
           </div>

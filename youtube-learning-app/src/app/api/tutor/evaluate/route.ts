@@ -135,17 +135,31 @@ Let me know when you're done watching!`;
         
         if (isDoneMessage) {
           // They just said they're done - now ask the comprehension question
-          const comprehensionPrompt = `The student just finished watching "${chapterToAsk.title}" (${formatTime(chapterToAsk.startTime)} to ${formatTime(chapterToAsk.endTime)}).
+          const comprehensionPrompt = `<task>Generate a specific comprehension question that tests the student's understanding of what they just watched.</task>
 
-Chapter summary: ${chapterToAsk.summary}
-Key points: ${chapterToAsk.keyPoints.join(', ')}
+<chapter_context>
+Chapter: "${chapterToAsk.title}"
+Timestamp Range: ${formatTime(chapterToAsk.startTime)} to ${formatTime(chapterToAsk.endTime)}
+Summary: ${chapterToAsk.summary}
+Key Concepts Covered: ${chapterToAsk.keyPoints.join(', ')}
+</chapter_context>
 
-Generate a specific comprehension question about this chapter. Ask them to:
-- Explain a key concept in their own words
-- Describe why something is important
-- Connect ideas from the chapter
+<instructions>
+The student has just finished watching this chapter. Create a single, focused question that tests genuine understanding of the core concepts.
 
-Be specific and test real understanding, not just recall.`;
+Your question should require them to:
+- Explain a key concept from the chapter in their own words (tests understanding vs memorization)
+- Describe why something matters or how it works (tests deeper comprehension)
+- Make connections between ideas presented in the chapter (tests synthesis)
+
+Make your question specific to the actual content covered. Use concrete concepts from the key points list above. Avoid generic questions that could apply to any video.
+
+Why this matters: This comprehension check determines whether they understood enough to progress. Your question should test real understanding, not superficial recall.
+</instructions>
+
+<output_format>
+Write your question as natural conversational text. Be warm and encouraging. Keep it focused - one clear question that tests their grasp of the material.
+</output_format>`;
 
           aiResponse = await callClaude(comprehensionPrompt, updatedMessages);
           
@@ -536,14 +550,18 @@ Would you like a hint, or shall we try again after rewatching?`;
  * Call Claude for general responses (returns clean text only)
  */
 async function callClaude(prompt: string, conversationHistory: Message[]): Promise<string> {
-  const systemPrompt = `You are a friendly Socratic tutor. Respond ONLY with your question or message - NO JSON, NO formatting, just natural conversational text. Be warm, encouraging, and guide the student through questions.`;
+  const systemPrompt = `You are a warm, encouraging Socratic tutor guiding students through discovery-based learning. 
+
+Your responses will be displayed directly to the student, so write in smooth, natural prose as if having a conversation with a curious learner. Guide them through carefully crafted questions that help them build understanding themselves.
+
+Use conversational language. Reference specific video timestamps in **bold** (format: **MM:SS**) when directing their attention. Be supportive and patient - learning is a journey of discovery.`;
   
   const command = new ConverseCommand({
     modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
     messages: [
       {
         role: 'user',
-        content: [{ text: prompt }]
+        content: [{ text: `${prompt}\n\nWrite your response as natural conversational text. Your message will be shown directly to the student, so be warm and encouraging.` }]
       }
     ],
     system: [{ text: systemPrompt }],
@@ -569,14 +587,17 @@ async function callClaudeForEvaluation(
 ): Promise<EvaluationResult> {
   const evaluationPrompt = `${prompt}
 
-Evaluate the student's answer and provide:
-1. A score from 0-100
-2. What they got right (strengths)
-3. What they missed (weaknesses)
-4. Any misconceptions
-5. Encouraging feedback
+<evaluation_output_format>
+Begin your response with the score on the first line in this exact format: "Score: X/100"
 
-Format: Start with "Score: X/100" then explain your evaluation naturally. Be encouraging!`;
+Then provide your evaluation in natural prose covering:
+- What the student demonstrated well (specific strengths)
+- What concepts they missed or misunderstood (specific weaknesses)
+- Any misconceptions in their reasoning
+- Encouraging feedback that motivates continued learning
+
+Write naturally and conversationally. Be specific about what they got right and what needs work. Your evaluation should be thorough yet supportive - this is formative assessment, not judgment.
+</evaluation_output_format>`;
 
   const command = new ConverseCommand({
     modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
@@ -588,7 +609,11 @@ Format: Start with "Score: X/100" then explain your evaluation naturally. Be enc
     ],
     system: [
       { 
-        text: 'You are a Socratic tutor evaluating student understanding. Provide clear scores and feedback. Be specific about what they got right and wrong. Always be encouraging.' 
+        text: `You are a Socratic tutor performing careful evaluation of student understanding. Your assessment determines whether they can progress, so accuracy is critical.
+
+Why evaluation matters: Fair assessment ensures students build solid foundations. Passing students forward with gaps causes frustration later, while holding back students who understand prevents progress. Be thorough and calibrated in your scoring.
+
+Use the evaluation rubric from your system instructions: Conceptual Accuracy (40%), Depth (30%), Articulation (20%), Connections (10%). Be specific about strengths and weaknesses. Your feedback should be encouraging yet honest.` 
       }
     ],
     inferenceConfig: {

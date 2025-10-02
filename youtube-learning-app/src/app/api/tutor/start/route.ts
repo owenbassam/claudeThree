@@ -51,12 +51,12 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: [{ text: `Generate a brief, friendly greeting for a student about to learn about: ${topic}. Then ask what they already know about it. Keep it conversational, warm, and under 3 sentences. No JSON, just plain text.` }]
+          content: [{ text: `${prompt}\n\nProvide ONLY your greeting and question as plain conversational text. Your response will be read directly by the student, so write naturally without any JSON, code blocks, or formatting markers.` }]
         }
       ],
       system: [
         {
-          text: `You are a friendly Socratic tutor. Respond with ONLY plain text - no JSON, no formatting. Be warm and conversational.`
+          text: `You are a warm, enthusiastic Socratic tutor beginning a learning session. Your response will be displayed directly to the student, so write in smooth, flowing prose. Use natural conversational language as if speaking to a curious friend. Your goal is to make them feel welcome and assess their starting knowledge.`
         }
       ],
       inferenceConfig: {

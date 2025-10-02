@@ -40,8 +40,8 @@ export function ProgressMap({
     return conversationState.chapterScores[chapterIndex] ?? null;
   };
 
-  const overallProgress = (conversationState.unlockedChapters.length / analysis.chapters.length) * 100;
   const completedChapters = Object.keys(conversationState.chapterScores).length;
+  const overallProgress = (completedChapters / analysis.chapters.length) * 100;
 
   return (
     <div 
