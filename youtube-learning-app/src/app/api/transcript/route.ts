@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractVideoId } from '@/lib/youtube';
-import { extractTranscript } from '@/lib/transcript-extractor';
-import { spawn } from 'child_process';
 
 interface TranscriptSegment {
   text: string;
@@ -39,99 +37,66 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const videoInfo = await getVideoInfo(videoId);
-    const transcriptResult = await extractTranscript(url);
+    // Call external transcript API
+    const transcriptApiUrl = process.env.TRANSCRIPT_API_URL || 'http://localhost:3001';
     
-    if (transcriptResult.success && transcriptResult.segments.length > 0) {
-      const transcript = transcriptResult.segments.map((segment: { text: string; start: number; end: number }) => ({
-        text: segment.text,
-        start: segment.start,
-        end: segment.end,
-        duration: segment.end - segment.start
-      }));
+    console.log(`Calling transcript API: ${transcriptApiUrl}/api/transcript`);
+    
+    const response = await fetch(`${transcriptApiUrl}/api/transcript`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ videoId }),
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       return NextResponse.json({
-        videoInfo,
-        transcript,
-        totalSegments: transcript.length,
-        hasTranscript: true,
-        error: null,
-        method: 'yt-dlp'
-      });
-    } else {
-      return NextResponse.json({
-        videoInfo,
+        videoInfo: {
+          id: videoId,
+          title: 'Unknown',
+          url: url
+        },
         transcript: [],
         totalSegments: 0,
         hasTranscript: false,
-        error: transcriptResult.error || 'No transcript available for this video',
-        method: 'yt-dlp'
+        error: errorData.error || 'Failed to fetch transcript from API',
+        method: 'external-api'
+      }, { status: response.status });
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.transcript.length > 0) {
+      return NextResponse.json({
+        videoInfo: data.videoInfo,
+        transcript: data.transcript,
+        totalSegments: data.transcript.length,
+        hasTranscript: true,
+        error: null,
+        method: 'external-api'
+      });
+    } else {
+      return NextResponse.json({
+        videoInfo: data.videoInfo || {
+          id: videoId,
+          title: 'Unknown',
+          url: url
+        },
+        transcript: [],
+        totalSegments: 0,
+        hasTranscript: false,
+        error: data.error || 'No transcript available for this video',
+        method: 'external-api'
       });
     }
 
   } catch (error) {
+    console.error('Transcript API error:', error);
     return NextResponse.json(
       { error: 'Failed to process video' },
       { status: 500 }
     );
-  }
-}
-
-async function getVideoInfo(videoId: string): Promise<VideoInfo> {
-  try {
-    // Use yt-dlp to get video metadata including duration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const videoInfo = await new Promise<any>((resolve, reject) => {
-      const ytDlp = spawn('yt-dlp', [
-        '--dump-json',
-        '--no-warnings',
-        `https://www.youtube.com/watch?v=${videoId}`
-      ]);
-
-      let stdout = '';
-      let stderr = '';
-
-      ytDlp.stdout.on('data', (data: Buffer) => {
-        stdout += data.toString();
-      });
-
-      ytDlp.stderr.on('data', (data: Buffer) => {
-        stderr += data.toString();
-      });
-
-      ytDlp.on('close', (code: number) => {
-        if (code === 0) {
-          try {
-            const data = JSON.parse(stdout);
-            resolve(data);
-          } catch (e) {
-            reject(new Error('Failed to parse video info'));
-          }
-        } else {
-          reject(new Error(`yt-dlp failed: ${stderr}`));
-        }
-      });
-    });
-
-    return {
-      id: videoId,
-      title: videoInfo.title || 'Unknown Title',
-      description: videoInfo.description || '',
-      duration: videoInfo.duration || 0,
-      thumbnailUrl: videoInfo.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      channelName: videoInfo.uploader || videoInfo.channel || 'Unknown',
-      url: `https://www.youtube.com/watch?v=${videoId}`
-    };
-  } catch (error) {
-    console.error('Error fetching video info:', error);
-    return {
-      id: videoId,
-      title: 'YouTube Video',
-      description: '',
-      duration: 0,
-      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      channelName: 'Unknown',
-      url: `https://www.youtube.com/watch?v=${videoId}`
-    };
   }
 }
