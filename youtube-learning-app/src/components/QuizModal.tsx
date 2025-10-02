@@ -88,16 +88,53 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{ 
+        background: 'rgba(0, 0, 0, 0.6)',
+        padding: 'var(--space-4)',
+        backdropFilter: 'blur(4px)'
+      }}
+    >
+      <div 
+        className="overflow-y-auto"
+        style={{
+          background: 'var(--color-bg-primary)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-xl)',
+          maxWidth: '720px',
+          width: '100%',
+          maxHeight: '90vh'
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <div 
+          className="flex items-center justify-between"
+          style={{
+            padding: 'var(--space-6)',
+            borderBottom: '1px solid var(--color-border)'
+          }}
+        >
+          <h2 
+            className="font-bold"
+            style={{ 
+              fontSize: 'var(--font-size-2xl)', 
+              color: 'var(--color-text-primary)' 
+            }}
+          >
             {quizState.showResults ? 'Quiz Results' : 'Practice Quiz'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            style={{
+              color: 'var(--color-text-tertiary)',
+              transition: 'var(--transition-fast)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 'var(--space-1)'
+            }}
+            className="hover:text-gray-700"
           >
             <X className="w-6 h-6" />
           </button>
@@ -107,64 +144,131 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
         <div className="p-6">
           {quizState.showResults ? (
             // Results View
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className={`text-4xl font-bold ${getScoreColor(quizState.score, questions.length)}`}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div 
+                  className={getScoreColor(quizState.score, questions.length)}
+                  style={{
+                    fontSize: 'var(--font-size-4xl)',
+                    fontWeight: 700
+                  }}
+                >
                   {quizState.score}/{questions.length}
                 </div>
-                <div className="text-gray-600 mt-2">
+                <div 
+                  style={{
+                    color: 'var(--color-text-secondary)',
+                    marginTop: 'var(--space-2)',
+                    fontSize: 'var(--font-size-lg)'
+                  }}
+                >
                   {Math.round((quizState.score / questions.length) * 100)}% Correct
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 {questions.map((question, index) => {
                   const userAnswer = quizState.selectedAnswers[index];
                   const isCorrect = userAnswer === question.correctAnswer;
                   
                   return (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start gap-3 mb-3">
+                    <div 
+                      key={index} 
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-lg)',
+                        padding: 'var(--space-4)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
                         {isCorrect ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 
+                            className="w-5 h-5 flex-shrink-0" 
+                            style={{ color: 'var(--color-success)', marginTop: '2px' }}
+                          />
                         ) : (
-                          <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                          <XCircle 
+                            className="w-5 h-5 flex-shrink-0" 
+                            style={{ color: 'var(--color-error)', marginTop: '2px' }}
+                          />
                         )}
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 mb-2">{question.question}</h4>
-                          <div className="text-sm text-gray-600 mb-2">
+                        <div style={{ flex: 1 }}>
+                          <h4 
+                            style={{
+                              fontWeight: 500,
+                              color: 'var(--color-text-primary)',
+                              marginBottom: 'var(--space-2)',
+                              fontSize: 'var(--font-size-base)'
+                            }}
+                          >
+                            {question.question}
+                          </h4>
+                          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
                             <button
                               onClick={() => onJumpToTime?.(question.timestamp)}
-                              className="text-purple-600 hover:text-purple-800 font-mono"
+                              style={{
+                                color: 'var(--color-brand-primary)',
+                                fontFamily: 'monospace',
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                                transition: 'var(--transition-fast)'
+                              }}
+                              className="hover:opacity-80"
                             >
                               {formatTime(question.timestamp)}
                             </button>
                           </div>
                           
-                          <div className="space-y-1">
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             {question.options.map((option, optionIndex) => (
                               <div 
                                 key={optionIndex}
-                                className={`p-2 rounded text-sm ${
-                                  optionIndex === question.correctAnswer
-                                    ? 'bg-green-50 border border-green-200 text-green-800'
+                                style={{
+                                  padding: 'var(--space-2)',
+                                  borderRadius: 'var(--radius-md)',
+                                  fontSize: 'var(--font-size-xs)',
+                                  border: `1px solid ${
+                                    optionIndex === question.correctAnswer
+                                      ? 'rgba(34, 197, 94, 0.3)'
+                                      : optionIndex === userAnswer && !isCorrect
+                                      ? 'rgba(239, 68, 68, 0.3)'
+                                      : 'var(--color-border)'
+                                  }`,
+                                  background: optionIndex === question.correctAnswer
+                                    ? 'rgba(34, 197, 94, 0.05)'
                                     : optionIndex === userAnswer && !isCorrect
-                                    ? 'bg-red-50 border border-red-200 text-red-800'
-                                    : 'bg-gray-50 border border-gray-200 text-gray-700'
-                                }`}
+                                    ? 'rgba(239, 68, 68, 0.05)'
+                                    : 'var(--color-bg-secondary)',
+                                  color: optionIndex === question.correctAnswer
+                                    ? 'var(--color-success)'
+                                    : optionIndex === userAnswer && !isCorrect
+                                    ? 'var(--color-error)'
+                                    : 'var(--color-text-primary)'
+                                }}
                               >
                                 {String.fromCharCode(65 + optionIndex)}. {option}
                                 {optionIndex === question.correctAnswer && (
-                                  <span className="ml-2 text-green-600 font-semibold">✓ Correct</span>
+                                  <span style={{ marginLeft: 'var(--space-2)', fontWeight: 600 }}>✓ Correct</span>
                                 )}
                                 {optionIndex === userAnswer && !isCorrect && (
-                                  <span className="ml-2 text-red-600 font-semibold">✗ Your Answer</span>
+                                  <span style={{ marginLeft: 'var(--space-2)', fontWeight: 600 }}>✗ Your Answer</span>
                                 )}
                               </div>
                             ))}
                           </div>
                           
-                          <div className="mt-3 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                          <div 
+                            style={{
+                              marginTop: 'var(--space-3)',
+                              fontSize: 'var(--font-size-xs)',
+                              color: 'var(--color-text-secondary)',
+                              background: 'var(--color-bg-secondary)',
+                              padding: 'var(--space-2)',
+                              borderRadius: 'var(--radius-md)'
+                            }}
+                          >
                             <strong>Explanation:</strong> {question.explanation}
                           </div>
                         </div>
@@ -174,16 +278,38 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 })}
               </div>
 
-              <div className="flex gap-3 justify-center">
+              <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center' }}>
                 <button
                   onClick={resetQuiz}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  style={{
+                    padding: 'var(--space-2) var(--space-4)',
+                    background: 'var(--color-brand-primary)',
+                    color: 'white',
+                    borderRadius: 'var(--radius-md)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    transition: 'var(--transition-base)',
+                    fontSize: 'var(--font-size-base)'
+                  }}
+                  className="hover:opacity-90"
                 >
                   Retake Quiz
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  style={{
+                    padding: 'var(--space-2) var(--space-4)',
+                    background: 'var(--color-bg-secondary)',
+                    color: 'var(--color-text-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    transition: 'var(--transition-base)',
+                    fontSize: 'var(--font-size-base)'
+                  }}
+                  className="hover:bg-gray-200"
                 >
                   Close
                 </button>
@@ -193,32 +319,67 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             // Quiz View
             <div className="space-y-6">
               {/* Progress */}
-              <div className="flex items-center justify-between text-sm text-gray-600">
+              <div 
+                className="flex items-center justify-between"
+                style={{
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
                 <span>Question {quizState.currentQuestionIndex + 1} of {questions.length}</span>
                 <span>
                   <button
                     onClick={() => onJumpToTime?.(currentQuestion.timestamp)}
-                    className="text-purple-600 hover:text-purple-800 font-mono"
+                    style={{
+                      color: 'var(--color-brand-primary)',
+                      fontFamily: 'monospace',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      transition: 'var(--transition-fast)'
+                    }}
+                    className="hover:opacity-80"
                   >
                     {formatTime(currentQuestion.timestamp)}
                   </button>
                 </span>
               </div>
 
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                style={{
+                  width: '100%',
+                  background: 'var(--color-bg-tertiary)',
+                  borderRadius: 'var(--radius-lg)',
+                  height: '8px',
+                  overflow: 'hidden'
+                }}
+              >
                 <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%` }}
+                  style={{ 
+                    width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
+                    background: 'var(--color-brand-primary)',
+                    height: '8px',
+                    borderRadius: 'var(--radius-lg)',
+                    transition: 'width 0.3s ease'
+                  }}
                 />
               </div>
 
               {/* Question */}
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                <h3 
+                  style={{
+                    fontSize: 'var(--font-size-xl)',
+                    fontWeight: 600,
+                    color: 'var(--color-text-primary)',
+                    marginBottom: 'var(--space-4)'
+                  }}
+                >
                   {currentQuestion.question}
                 </h3>
 
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                   {currentQuestion.options.map((option, optionIndex) => {
                     const isSelected = quizState.selectedAnswers[quizState.currentQuestionIndex] === optionIndex;
                     
@@ -226,13 +387,20 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                       <button
                         key={optionIndex}
                         onClick={() => handleAnswerSelect(optionIndex)}
-                        className={`w-full p-3 text-left rounded-lg border transition-colors ${
-                          isSelected
-                            ? 'border-purple-500 bg-purple-50 text-purple-900'
-                            : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-purple-300 hover:bg-purple-50'
-                        }`}
+                        style={{
+                          width: '100%',
+                          padding: 'var(--space-3)',
+                          textAlign: 'left',
+                          borderRadius: 'var(--radius-md)',
+                          border: `1px solid ${isSelected ? 'var(--color-brand-primary)' : 'var(--color-border)'}`,
+                          background: isSelected ? 'rgba(255, 107, 53, 0.05)' : 'var(--color-bg-secondary)',
+                          color: isSelected ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
+                          transition: 'var(--transition-base)',
+                          cursor: 'pointer'
+                        }}
+                        className="hover:border-opacity-50"
                       >
-                        <span className="font-medium mr-3">
+                        <span style={{ fontWeight: 500, marginRight: 'var(--space-2)' }}>
                           {String.fromCharCode(65 + optionIndex)}.
                         </span>
                         {option}
@@ -241,12 +409,21 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                   })}
                 </div>
 
-                <div className="mt-4 text-sm text-gray-600">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    currentQuestion.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                    currentQuestion.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
+                <div style={{ marginTop: 'var(--space-4)', fontSize: 'var(--font-size-xs)' }}>
+                  <span 
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 'var(--radius-lg)',
+                      fontSize: 'var(--font-size-xs)',
+                      textTransform: 'capitalize',
+                      background: currentQuestion.difficulty === 'easy' ? 'rgba(34, 197, 94, 0.1)' :
+                                  currentQuestion.difficulty === 'medium' ? 'rgba(245, 158, 11, 0.1)' :
+                                  'rgba(239, 68, 68, 0.1)',
+                      color: currentQuestion.difficulty === 'easy' ? 'var(--color-success)' :
+                             currentQuestion.difficulty === 'medium' ? 'var(--color-warning)' :
+                             'var(--color-error)'
+                    }}
+                  >
                     {currentQuestion.difficulty}
                   </span>
                 </div>
@@ -257,7 +434,19 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 <button
                   onClick={handlePrevious}
                   disabled={quizState.currentQuestionIndex === 0}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center"
+                  style={{
+                    gap: 'var(--space-2)',
+                    padding: 'var(--space-2) var(--space-3)',
+                    fontSize: 'var(--font-size-base)',
+                    color: 'var(--color-text-secondary)',
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    transition: 'var(--transition-base)',
+                    cursor: quizState.currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                    opacity: quizState.currentQuestionIndex === 0 ? 0.5 : 1
+                  }}
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Previous
@@ -266,7 +455,19 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 <button
                   onClick={handleNext}
                   disabled={!hasAnsweredCurrent}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center"
+                  style={{
+                    gap: 'var(--space-2)',
+                    padding: 'var(--space-2) var(--space-4)',
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 600,
+                    color: 'white',
+                    background: !hasAnsweredCurrent ? 'var(--color-border)' : 'var(--color-brand-primary)',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    transition: 'var(--transition-base)',
+                    cursor: !hasAnsweredCurrent ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {isLastQuestion ? 'Finish Quiz' : 'Next'}
                   {!isLastQuestion && <ChevronRight className="w-4 h-4" />}

@@ -35,84 +35,152 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
   const hasChapters = analysis && analysis.chapters && analysis.chapters.length > 0;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Video Info Card */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">{videoInfo.title}</h2>
-          <button
-            onClick={onReset}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    <div className="animate-fadeIn" style={{ maxWidth: 'var(--container-max-width)', margin: '0 auto' }}>
+      {/* Header with video title - clean, minimal */}
+      <div 
+        className="flex justify-between items-start flex-wrap"
+        style={{ 
+          marginBottom: 'var(--space-8)',
+          gap: 'var(--space-3)'
+        }}
+      >
+        <div style={{ flex: '1', minWidth: '300px' }}>
+          <h2 
+            className="font-semibold"
+            style={{ 
+              fontSize: 'var(--font-size-3xl)',
+              lineHeight: 'var(--line-height-tight)',
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--space-2)'
+            }}
           >
-            Try Another Video
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Video Player Section */}
-          <div className="space-y-4">
-            <VideoPlayer
-              ref={videoPlayerRef}
-              url={videoInfo.url}
-              transcript={hasTranscript ? transcript : undefined}
-              onTimeUpdate={handleTimeUpdate}
-              className="w-full"
-            />
-          </div>
-          
-          {/* Video Details Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-gray-600">
-              <span className="font-medium">Channel:</span>
-              <span>{videoInfo.channelName}</span>
+            {videoInfo.title}
+          </h2>
+          <div 
+            className="flex items-center flex-wrap"
+            style={{ 
+              gap: 'var(--space-3)',
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-secondary)'
+            }}
+          >
+            <span>{videoInfo.channelName}</span>
+            <span>•</span>
+            <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+              <Clock className="w-3.5 h-3.5" />
+              <span>{videoInfo.duration ? formatTime(videoInfo.duration) : 'Loading...'}</span>
             </div>
             
-            <div className="flex items-center gap-2 text-gray-600">
-              <Clock className="w-4 h-4" />
-              <span>Duration: {videoInfo.duration ? formatTime(videoInfo.duration) : 'Loading...'}</span>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-4">
-              {hasTranscript ? (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">Transcript available ({transcript.length} segments)</span>
+            {hasTranscript && (
+              <>
+                <span>•</span>
+                <div className="flex items-center" style={{ gap: 'var(--space-1)', color: 'var(--color-success)' }}>
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span>Transcript</span>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-orange-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm">No transcript available</span>
-                </div>
-              )}
+              </>
+            )}
 
-              {isAnalyzing && (
-                <div className="flex items-center gap-2 text-indigo-600">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Analyzing with Claude AI...</span>
+            {isAnalyzing && (
+              <>
+                <span>•</span>
+                <div className="flex items-center" style={{ gap: 'var(--space-1)', color: 'var(--color-brand-primary)' }}>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Analyzing...</span>
                 </div>
-              )}
+              </>
+            )}
 
-              {isComplete && (
-                <div className="flex items-center gap-2 text-purple-600">
-                  <Brain className="w-4 h-4" />
-                  <span className="text-sm">AI Analysis Complete</span>
+            {isComplete && (
+              <>
+                <span>•</span>
+                <div className="flex items-center" style={{ gap: 'var(--space-1)', color: 'var(--color-brand-primary)' }}>
+                  <Brain className="w-3.5 h-3.5" />
+                  <span>Analysis Complete</span>
                 </div>
-              )}
-            </div>
-            
-            {error && (
-              <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg">
-                <AlertTriangle className="w-4 h-4" />
-                <span className="text-sm">{error}</span>
-              </div>
+              </>
             )}
           </div>
         </div>
+
+        {/* Secondary CTA button */}
+        <button
+          onClick={onReset}
+          style={{
+            padding: 'var(--space-2) var(--space-3)',
+            fontSize: 'var(--font-size-xs)',
+            fontWeight: 500,
+            color: 'var(--color-text-secondary)',
+            background: 'transparent',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+            transition: 'var(--transition-base)',
+            cursor: 'pointer'
+          }}
+          className="hover:border-gray-400"
+        >
+          Try Another Video
+        </button>
+      </div>
+
+      {error && (
+        <div 
+          className="flex items-start"
+          style={{
+            marginBottom: 'var(--space-6)',
+            padding: 'var(--space-3)',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            borderRadius: 'var(--radius-lg)',
+            gap: 'var(--space-2)'
+          }}
+        >
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-error)' }} />
+          <div>
+            <p style={{ 
+              fontSize: 'var(--font-size-base)', 
+              color: 'var(--color-error)',
+              fontWeight: 500,
+              marginBottom: 'var(--space-1)'
+            }}>
+              Error
+            </p>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-error)' }}>
+              {error}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Video Player Card - prominent, clean */}
+      <div 
+        style={{
+          background: 'var(--color-bg-primary)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--space-6)',
+          marginBottom: 'var(--space-8)',
+          boxShadow: 'var(--shadow-sm)'
+        }}
+      >
+        <VideoPlayer
+          ref={videoPlayerRef}
+          url={videoInfo.url}
+          transcript={hasTranscript ? transcript : undefined}
+          onTimeUpdate={handleTimeUpdate}
+          className="w-full"
+        />
       </div>
 
       {/* Interactive Learning Features - Show when analysis is complete */}
       {isComplete && analysis && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div 
+          className="grid grid-cols-1 lg:grid-cols-3"
+          style={{ 
+            gap: 'var(--space-6)',
+            marginBottom: 'var(--space-8)'
+          }}
+        >
           {/* Chapter Navigation */}
           {hasChapters && (
             <div className="lg:col-span-1">
@@ -148,24 +216,72 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
 
       {/* Transcript Preview - only show if no analysis yet */}
       {hasTranscript && !isComplete && !isAnalyzing && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-xl font-semibold text-gray-900">Transcript Preview</h3>
+        <div 
+          style={{
+            background: 'var(--color-bg-primary)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+            marginBottom: 'var(--space-6)'
+          }}
+        >
+          <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+            <FileText className="w-5 h-5" style={{ color: 'var(--color-brand-primary)' }} />
+            <h3 
+              className="font-semibold"
+              style={{ 
+                fontSize: 'var(--font-size-xl)', 
+                color: 'var(--color-text-primary)' 
+              }}
+            >
+              Transcript Preview
+            </h3>
           </div>
           
-          <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 space-y-2">
+          <div 
+            className="overflow-y-auto"
+            style={{
+              maxHeight: '256px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)'
+            }}
+          >
             {transcript.slice(0, 10).map((segment, index) => (
-              <div key={index} className="flex gap-3 text-sm">
-                <span className="text-indigo-600 font-mono min-w-[60px]">
+              <div 
+                key={index} 
+                className="flex"
+                style={{ 
+                  gap: 'var(--space-3)',
+                  marginBottom: 'var(--space-2)',
+                  fontSize: 'var(--font-size-xs)'
+                }}
+              >
+                <span 
+                  className="font-mono"
+                  style={{ 
+                    color: 'var(--color-brand-primary)',
+                    minWidth: '60px',
+                    fontWeight: 500
+                  }}
+                >
                   {formatTime(segment.start)}
                 </span>
-                <span className="text-gray-700">{segment.text}</span>
+                <span style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-base)' }}>
+                  {segment.text}
+                </span>
               </div>
             ))}
             
             {transcript.length > 10 && (
-              <div className="text-center text-gray-500 text-sm py-2">
+              <div 
+                className="text-center"
+                style={{ 
+                  color: 'var(--color-text-tertiary)',
+                  fontSize: 'var(--font-size-xs)',
+                  paddingTop: 'var(--space-2)'
+                }}
+              >
                 ... and {transcript.length - 10} more segments
               </div>
             )}
@@ -173,30 +289,38 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
         </div>
       )}
 
-      {/* Next Steps - only show if we have transcript but no analysis */}
-      {hasTranscript && !isComplete && !isAnalyzing && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-indigo-900 mb-2">
-            🎉 Great! We found the transcript
-          </h3>
-          <p className="text-indigo-700 mb-4">
-            Next, we'll analyze this content with Claude AI to create chapters, key concepts, and practice questions.
-          </p>
-          <div className="text-sm text-indigo-600">
-            <strong>Coming in Step 3:</strong> AI-powered content analysis and interactive learning features
-          </div>
-        </div>
-      )}
-      
+      {/* No Transcript Message */}
       {!hasTranscript && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+        <div 
+          style={{
+            background: 'rgba(251, 191, 36, 0.1)',
+            border: '1px solid rgba(251, 191, 36, 0.3)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)'
+          }}
+        >
+          <h3 
+            className="font-semibold"
+            style={{ 
+              fontSize: 'var(--font-size-lg)', 
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--space-2)'
+            }}
+          >
             No Transcript Found
           </h3>
-          <p className="text-yellow-700 mb-4">
+          <p style={{ 
+            fontSize: 'var(--font-size-base)', 
+            color: 'var(--color-text-secondary)',
+            lineHeight: 'var(--line-height-base)',
+            marginBottom: 'var(--space-3)'
+          }}>
             This video doesn't have captions or transcripts available. Try with a different educational video that has captions enabled.
           </p>
-          <div className="text-sm text-yellow-600">
+          <div style={{ 
+            fontSize: 'var(--font-size-xs)', 
+            color: 'var(--color-text-tertiary)'
+          }}>
             <strong>Tip:</strong> Most popular educational channels (Khan Academy, MIT OpenCourseWare, TED-Ed) have transcripts available.
           </div>
         </div>

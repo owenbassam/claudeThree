@@ -15,48 +15,127 @@ export function KeyConcepts({ concepts, onJumpToTime, className = '' }: KeyConce
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-      <div className="flex items-center gap-2 mb-4">
-        <Lightbulb className="w-5 h-5 text-yellow-600" />
-        <h3 className="text-xl font-semibold text-gray-900">Key Concepts</h3>
+    <div 
+      className={className}
+      style={{
+        background: 'var(--color-bg-primary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-4)',
+        boxShadow: 'var(--shadow-sm)'
+      }}
+    >
+      <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+        <Lightbulb className="w-5 h-5" style={{ color: 'var(--color-brand-primary)' }} />
+        <h3 
+          className="font-semibold"
+          style={{ 
+            fontSize: 'var(--font-size-xl)', 
+            color: 'var(--color-text-primary)' 
+          }}
+        >
+          Key Concepts
+        </h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2"
+        style={{ gap: 'var(--space-3)' }}
+      >
         {concepts.map((concept, index) => (
           <div
             key={index}
-            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+            style={{
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)',
+              transition: 'var(--transition-base)',
+              cursor: 'pointer',
+              background: expandedIndex === index ? 'var(--color-bg-secondary)' : 'var(--color-bg-primary)'
+            }}
+            className="hover:shadow-md"
           >
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="font-semibold text-gray-900">{concept.term}</h4>
+            <div className="flex items-start justify-between" style={{ gap: 'var(--space-2)' }}>
+              <h4 
+                className="font-semibold"
+                style={{
+                  fontSize: 'var(--font-size-base)',
+                  color: 'var(--color-text-primary)',
+                  flex: '1'
+                }}
+              >
+                {concept.term}
+              </h4>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onJumpToTime(concept.timestamp);
                 }}
-                className="text-indigo-600 hover:text-indigo-800 text-sm font-mono flex items-center gap-1 flex-shrink-0"
+                className="font-mono flex items-center flex-shrink-0"
+                style={{
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--color-brand-primary)',
+                  gap: 'var(--space-1)',
+                  transition: 'var(--transition-fast)'
+                }}
               >
                 <Clock className="w-3 h-3" />
                 {formatTime(concept.timestamp)}
               </button>
             </div>
             
-            <p className={`text-gray-700 text-sm mt-2 ${
-              expandedIndex === index ? '' : 'line-clamp-2'
-            }`}>
+            <p 
+              className={expandedIndex === index ? '' : 'line-clamp-2'}
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                lineHeight: 'var(--line-height-base)',
+                color: 'var(--color-text-secondary)',
+                marginTop: 'var(--space-2)'
+              }}
+            >
               {concept.definition}
             </p>
 
             {expandedIndex === index && concept.context && (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-500 font-medium mb-1">Context from video:</p>
-                <p className="text-sm text-gray-600 italic">"{concept.context}"</p>
+              <div 
+                style={{
+                  marginTop: 'var(--space-3)',
+                  paddingTop: 'var(--space-3)',
+                  borderTop: '1px solid var(--color-border)'
+                }}
+              >
+                <p 
+                  className="font-medium"
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-tertiary)',
+                    marginBottom: 'var(--space-1)'
+                  }}
+                >
+                  Context from video:
+                </p>
+                <p 
+                  className="italic"
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    lineHeight: 'var(--line-height-base)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  "{concept.context}"
+                </p>
               </div>
             )}
 
             {expandedIndex !== index && (
-              <p className="text-xs text-indigo-600 mt-2">Click to expand</p>
+              <p style={{
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--color-brand-primary)',
+                marginTop: 'var(--space-2)'
+              }}>
+                Click to expand
+              </p>
             )}
           </div>
         ))}

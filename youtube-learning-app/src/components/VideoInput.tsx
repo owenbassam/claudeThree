@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Play, AlertCircle } from 'lucide-react';
+import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 
 interface VideoInputProps {
   onAnalyze: (url: string) => void;
@@ -11,6 +11,7 @@ interface VideoInputProps {
 
 export function VideoInput({ onAnalyze, isLoading = false, error }: VideoInputProps) {
   const [url, setUrl] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,53 +21,112 @@ export function VideoInput({ onAnalyze, isLoading = false, error }: VideoInputPr
   };
 
   return (
-    <div className="max-w-4xl mx-auto mb-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
-          Get Started with Any YouTube Video
-        </h2>
+    <div className="animate-fadeIn">
+      <form onSubmit={handleSubmit}>
+        <div 
+          className="flex flex-col md:flex-row items-stretch"
+          style={{ gap: 'var(--space-2)' }}
+        >
+          {/* Input Field - Anthropic style */}
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="Paste any YouTube URL..."
+            disabled={isLoading}
+            style={{
+              flex: '1',
+              padding: 'var(--space-2) var(--space-3)',
+              fontSize: 'var(--font-size-base)',
+              lineHeight: 'var(--line-height-base)',
+              border: `1px solid ${isFocused ? 'var(--color-border-focus)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--color-bg-primary)',
+              color: 'var(--color-text-primary)',
+              transition: 'var(--transition-base)',
+              boxShadow: isFocused ? '0 0 0 3px rgba(255, 107, 53, 0.1)' : 'none',
+              outline: 'none'
+            }}
+            className={isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+          />
+          
+          {/* Primary CTA Button - Anthropic coral style */}
+          <button
+            type="submit"
+            disabled={!url.trim() || isLoading}
+            style={{
+              padding: 'var(--space-2) var(--space-4)',
+              fontSize: 'var(--font-size-base)',
+              fontWeight: 600,
+              background: (!url.trim() || isLoading) ? 'var(--color-border)' : 'var(--color-brand-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              transition: 'var(--transition-base)',
+              cursor: (!url.trim() || isLoading) ? 'not-allowed' : 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-1)',
+              whiteSpace: 'nowrap'
+            }}
+            className={!url.trim() || isLoading ? '' : 'hover:brightness-90'}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Analyze Video</span>
+              </>
+            )}
+          </button>
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste YouTube URL here... (e.g., https://www.youtube.com/watch?v=...)"
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
-              disabled={isLoading}
+        {/* Error Message */}
+        {error && (
+          <div 
+            className="flex items-start"
+            style={{
+              marginTop: 'var(--space-2)',
+              padding: 'var(--space-2)',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: 'var(--radius-md)',
+              gap: 'var(--space-2)'
+            }}
+          >
+            <AlertCircle 
+              className="w-4 h-4 flex-shrink-0 mt-0.5" 
+              style={{ color: 'var(--color-error)' }}
             />
-            <button
-              type="submit"
-              disabled={!url.trim() || isLoading}
-              className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Analyze Video
-                </>
-              )}
-            </button>
+            <span style={{ 
+              fontSize: 'var(--font-size-xs)', 
+              color: 'var(--color-error)',
+              lineHeight: 'var(--line-height-base)'
+            }}>
+              {error}
+            </span>
           </div>
-          
-          {error && (
-            <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">{error}</span>
-            </div>
-          )}
-          
-          <p className="text-sm text-gray-500 text-center">
-            Works best with educational content: lectures, tutorials, documentaries
-          </p>
-        </form>
-      </div>
+        )}
+        
+        {/* Helper Text */}
+        <p 
+          className="text-center"
+          style={{ 
+            marginTop: 'var(--space-2)',
+            fontSize: 'var(--font-size-xs)', 
+            color: 'var(--color-text-tertiary)',
+            lineHeight: 'var(--line-height-base)'
+          }}
+        >
+          Works with educational content, lectures, tutorials, and documentaries
+        </p>
+      </form>
     </div>
   );
 }

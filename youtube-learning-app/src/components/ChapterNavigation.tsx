@@ -29,13 +29,30 @@ export function ChapterNavigation({
   const currentChapterIndex = getCurrentChapterIndex();
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-      <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-5 h-5 text-indigo-600" />
-        <h3 className="text-xl font-semibold text-gray-900">Chapters</h3>
+    <div 
+      className={className}
+      style={{
+        background: 'var(--color-bg-primary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-4)',
+        boxShadow: 'var(--shadow-sm)'
+      }}
+    >
+      <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+        <Clock className="w-5 h-5" style={{ color: 'var(--color-brand-primary)' }} />
+        <h3 
+          className="font-semibold"
+          style={{ 
+            fontSize: 'var(--font-size-xl)', 
+            color: 'var(--color-text-primary)' 
+          }}
+        >
+          Chapters
+        </h3>
       </div>
 
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         {chapters.map((chapter, index) => {
           const isActive = index === currentChapterIndex;
           const isPast = currentTime > chapter.startTime;
@@ -44,46 +61,75 @@ export function ChapterNavigation({
             <button
               key={index}
               onClick={() => onJumpToTime(chapter.startTime)}
-              className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
-                isActive
-                  ? 'bg-indigo-50 border-2 border-indigo-500 shadow-md'
-                  : isPast
-                  ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                  : 'border border-gray-200 hover:bg-gray-50'
-              }`}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                padding: 'var(--space-3)',
+                borderRadius: 'var(--radius-md)',
+                border: isActive 
+                  ? '2px solid var(--color-brand-primary)' 
+                  : '1px solid var(--color-border)',
+                background: isActive 
+                  ? 'rgba(255, 107, 53, 0.05)' 
+                  : isPast 
+                  ? 'var(--color-bg-secondary)' 
+                  : 'var(--color-bg-primary)',
+                transition: 'var(--transition-base)',
+                cursor: 'pointer'
+              }}
+              className="hover:shadow-md"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-start justify-between" style={{ gap: 'var(--space-3)' }}>
+                <div style={{ flex: '1' }}>
+                  <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
                     {isPast && !isActive && (
-                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-success)' }} />
                     )}
-                    <h4 className={`font-semibold ${
-                      isActive ? 'text-indigo-900' : 'text-gray-900'
-                    }`}>
+                    <h4 
+                      className="font-semibold"
+                      style={{
+                        fontSize: 'var(--font-size-base)',
+                        color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-primary)'
+                      }}
+                    >
                       {chapter.title}
                     </h4>
                   </div>
-                  <p className={`text-sm ${
-                    isActive ? 'text-indigo-700' : 'text-gray-600'
-                  }`}>
+                  <p style={{
+                    fontSize: 'var(--font-size-xs)',
+                    lineHeight: 'var(--line-height-base)',
+                    color: isActive ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)'
+                  }}>
                     {chapter.summary}
                   </p>
                 </div>
-                <div className={`text-sm font-mono flex-shrink-0 ${
-                  isActive 
-                    ? 'text-indigo-600 font-semibold' 
-                    : 'text-gray-500'
-                }`}>
+                <div 
+                  className="font-mono flex-shrink-0"
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-tertiary)'
+                  }}
+                >
                   {formatTime(chapter.startTime)}
                 </div>
               </div>
 
               {isActive && (
-                <div className="mt-2 h-1 bg-indigo-200 rounded-full overflow-hidden">
+                <div 
+                  className="overflow-hidden"
+                  style={{
+                    marginTop: 'var(--space-2)',
+                    height: '4px',
+                    background: 'rgba(255, 107, 53, 0.2)',
+                    borderRadius: '2px'
+                  }}
+                >
                   <div
-                    className="h-full bg-indigo-600 transition-all duration-300"
                     style={{
+                      height: '100%',
+                      background: 'var(--color-brand-primary)',
+                      transition: 'var(--transition-base)',
                       width: `${
                         index < chapters.length - 1
                           ? ((currentTime - chapter.startTime) / 
@@ -100,17 +146,36 @@ export function ChapterNavigation({
       </div>
 
       {/* Chapter Progress Summary */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Progress</span>
-          <span className="font-semibold text-gray-900">
+      <div 
+        style={{
+          marginTop: 'var(--space-6)',
+          paddingTop: 'var(--space-4)',
+          borderTop: '1px solid var(--color-border)'
+        }}
+      >
+        <div className="flex items-center justify-between" style={{ fontSize: 'var(--font-size-xs)' }}>
+          <span style={{ color: 'var(--color-text-secondary)' }}>Progress</span>
+          <span 
+            className="font-semibold"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
             Chapter {currentChapterIndex + 1} of {chapters.length}
           </span>
         </div>
-        <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div 
+          className="overflow-hidden"
+          style={{
+            marginTop: 'var(--space-2)',
+            height: '6px',
+            background: 'var(--color-bg-tertiary)',
+            borderRadius: 'var(--radius-sm)'
+          }}
+        >
           <div
-            className="h-full bg-indigo-600 transition-all duration-300"
             style={{
+              height: '100%',
+              background: 'var(--color-brand-primary)',
+              transition: 'var(--transition-base)',
               width: `${((currentChapterIndex + 1) / chapters.length) * 100}%`
             }}
           />

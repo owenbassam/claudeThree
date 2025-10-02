@@ -77,10 +77,18 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   const currentSegment = getCurrentTranscriptSegment();
 
   return (
-    <div className={`bg-black rounded-lg overflow-hidden ${className}`}>
+    <div 
+      className={className}
+      style={{
+        background: '#000000',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden'
+      }}
+    >
       {/* Video Player */}
       <div 
-        className="relative aspect-video bg-black group"
+        className="relative aspect-video group"
+        style={{ background: '#000000' }}
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => setShowControls(false)}
       >
@@ -100,67 +108,110 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
         {/* Custom Controls Overlay */}
         <div 
-          className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-0 transition-opacity"
+          style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 100%)',
+            opacity: showControls ? 1 : 0,
+            transitionDuration: '0.3s'
+          }}
         >
           {/* Play/Pause Button Center */}
           <div className="absolute inset-0 flex items-center justify-center">
             <button
               onClick={togglePlayPause}
-              className="bg-white/20 hover:bg-white/30 rounded-full p-4 transition-all duration-200 backdrop-blur-sm"
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '50%',
+                padding: 'var(--space-4)',
+                transition: 'var(--transition-base)',
+                backdropFilter: 'blur(8px)',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+              className="hover:bg-white/25"
             >
               {playing ? (
-                <Pause className="w-8 h-8 text-white" />
+                <Pause className="w-8 h-8" style={{ color: 'white' }} />
               ) : (
-                <Play className="w-8 h-8 text-white ml-1" />
+                <Play className="w-8 h-8" style={{ color: 'white', marginLeft: '4px' }} />
               )}
             </button>
           </div>
 
           {/* Bottom Controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div 
+            className="absolute bottom-0 left-0 right-0"
+            style={{ padding: 'var(--space-4)' }}
+          >
             {/* Progress Bar */}
-            <div className="mb-3">
+            <div style={{ marginBottom: 'var(--space-3)' }}>
               <input
                 type="range"
                 min={0}
                 max={duration || 0}
                 value={currentTime}
                 onChange={(e) => seekTo(parseFloat(e.target.value))}
-                className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
+                className="w-full appearance-none cursor-pointer"
                 style={{
-                  background: duration ? `linear-gradient(to right, #ef4444 0%, #ef4444 ${(currentTime / duration) * 100}%, rgba(255,255,255,0.3) ${(currentTime / duration) * 100}%, rgba(255,255,255,0.3) 100%)` : undefined
+                  height: '4px',
+                  borderRadius: 'var(--radius-lg)',
+                  background: duration 
+                    ? `linear-gradient(to right, var(--color-brand-primary) 0%, var(--color-brand-primary) ${(currentTime / duration) * 100}%, rgba(255,255,255,0.3) ${(currentTime / duration) * 100}%, rgba(255,255,255,0.3) 100%)` 
+                    : 'rgba(255,255,255,0.3)'
                 }}
               />
             </div>
 
             {/* Control Buttons */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
                 <button
                   onClick={() => skipSeconds(-10)}
-                  className="text-white hover:text-red-400 transition-colors"
+                  style={{
+                    color: 'white',
+                    transition: 'var(--transition-fast)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                  className="hover:text-[#FF6B35]"
                 >
                   <SkipBack className="w-5 h-5" />
                 </button>
 
                 <button
                   onClick={togglePlayPause}
-                  className="text-white hover:text-red-400 transition-colors"
+                  style={{
+                    color: 'white',
+                    transition: 'var(--transition-fast)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                  className="hover:text-[#FF6B35]"
                 >
                   {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                 </button>
 
                 <button
                   onClick={() => skipSeconds(10)}
-                  className="text-white hover:text-red-400 transition-colors"
+                  style={{
+                    color: 'white',
+                    transition: 'var(--transition-fast)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                  className="hover:text-[#FF6B35]"
                 >
                   <SkipForward className="w-5 h-5" />
                 </button>
 
-                <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-white" />
+                <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                  <Volume2 className="w-4 h-4" style={{ color: 'white' }} />
                   <input
                     type="range"
                     min={0}
@@ -168,16 +219,38 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     step={0.1}
                     value={volume}
                     onChange={handleVolumeChange}
-                    className="w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
+                    className="appearance-none cursor-pointer"
+                    style={{
+                      width: '64px',
+                      height: '4px',
+                      background: 'rgba(255,255,255,0.3)',
+                      borderRadius: 'var(--radius-lg)'
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-white text-sm font-mono">
+              <div className="flex items-center" style={{ gap: 'var(--space-3)' }}>
+                <span 
+                  style={{
+                    color: 'white',
+                    fontSize: 'var(--font-size-xs)',
+                    fontFamily: 'monospace'
+                  }}
+                >
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </span>
-                <button className="text-white hover:text-red-400 transition-colors">
+                <button 
+                  style={{
+                    color: 'white',
+                    transition: 'var(--transition-fast)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                  className="hover:text-[#FF6B35]"
+                >
                   <Maximize2 className="w-5 h-5" />
                 </button>
               </div>
@@ -188,19 +261,49 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
       {/* Current Transcript Display */}
       {currentSegment && (
-        <div className="bg-gray-900 text-white p-4 border-t border-gray-700">
+        <div 
+          style={{
+            background: '#1A1A1A',
+            color: 'white',
+            padding: 'var(--space-4)',
+            borderTop: '1px solid rgba(255,255,255,0.1)'
+          }}
+        >
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-gray-300 text-sm mb-1">
+            <div style={{ flex: 1 }}>
+              <p 
+                style={{
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: 'var(--font-size-xs)',
+                  marginBottom: 'var(--space-1)'
+                }}
+              >
                 Current transcript ({formatTime(currentSegment.start)})
               </p>
-              <p className="text-white text-base leading-relaxed">
+              <p 
+                style={{
+                  color: 'white',
+                  fontSize: 'var(--font-size-base)',
+                  lineHeight: 'var(--line-height-loose)'
+                }}
+              >
                 {currentSegment.text}
               </p>
             </div>
             <button
               onClick={() => seekTo(currentSegment.start)}
-              className="ml-4 text-red-400 hover:text-red-300 transition-colors text-sm font-mono"
+              style={{
+                marginLeft: 'var(--space-4)',
+                color: 'var(--color-brand-primary)',
+                fontSize: 'var(--font-size-xs)',
+                fontFamily: 'monospace',
+                transition: 'var(--transition-fast)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px'
+              }}
+              className="hover:opacity-80"
             >
               {formatTime(currentSegment.start)}
             </button>
