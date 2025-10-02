@@ -91,20 +91,23 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
     <div 
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ 
-        background: 'rgba(0, 0, 0, 0.6)',
+        background: 'rgba(0, 0, 0, 0.7)',
         padding: 'var(--space-4)',
-        backdropFilter: 'blur(4px)'
+        backdropFilter: 'blur(4px)',
+        overflowY: 'auto'
       }}
     >
       <div 
-        className="overflow-y-auto"
         style={{
           background: 'var(--color-bg-primary)',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
           maxWidth: '720px',
           width: '100%',
-          maxHeight: '90vh'
+          margin: 'var(--space-8) auto',
+          maxHeight: 'calc(100vh - 64px)',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Header */}
@@ -112,7 +115,8 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
           className="flex items-center justify-between"
           style={{
             padding: 'var(--space-6)',
-            borderBottom: '1px solid var(--color-border)'
+            borderBottom: '1px solid var(--color-border)',
+            flexShrink: 0
           }}
         >
           <h2 
@@ -141,7 +145,13 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div 
+          style={{ 
+            padding: 'var(--space-6)',
+            overflowY: 'auto',
+            flex: 1
+          }}
+        >
           {quizState.showResults ? (
             // Results View
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -317,105 +327,81 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             </div>
           ) : (
             // Quiz View
-            <div className="space-y-6">
-              {/* Progress */}
-              <div 
-                className="flex items-center justify-between"
-                style={{
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'var(--color-text-secondary)'
-                }}
-              >
-                <span>Question {quizState.currentQuestionIndex + 1} of {questions.length}</span>
-                <span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              {/* Progress Bar */}
+              <div>
+                <div 
+                  className="flex items-center justify-between"
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: 'var(--space-3)'
+                  }}
+                >
+                  <span style={{ fontWeight: 500 }}>
+                    Question {quizState.currentQuestionIndex + 1} of {questions.length}
+                  </span>
                   <button
                     onClick={() => onJumpToTime?.(currentQuestion.timestamp)}
                     style={{
                       color: 'var(--color-brand-primary)',
                       fontFamily: 'monospace',
-                      background: 'transparent',
-                      border: 'none',
+                      fontSize: 'var(--font-size-xs)',
+                      background: 'rgba(239, 68, 68, 0.05)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '4px 8px',
                       cursor: 'pointer',
-                      padding: 0,
-                      transition: 'var(--transition-fast)'
+                      transition: 'var(--transition-fast)',
+                      fontWeight: 500
                     }}
-                    className="hover:opacity-80"
+                    className="hover:bg-red-100"
                   >
                     {formatTime(currentQuestion.timestamp)}
                   </button>
-                </span>
-              </div>
-
-              <div 
-                style={{
-                  width: '100%',
-                  background: 'var(--color-bg-tertiary)',
-                  borderRadius: 'var(--radius-lg)',
-                  height: '8px',
-                  overflow: 'hidden'
-                }}
-              >
-                <div 
-                  style={{ 
-                    width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
-                    background: 'var(--color-brand-primary)',
-                    height: '8px',
-                    borderRadius: 'var(--radius-lg)',
-                    transition: 'width 0.3s ease'
-                  }}
-                />
-              </div>
-
-              {/* Question */}
-              <div>
-                <h3 
-                  style={{
-                    fontSize: 'var(--font-size-xl)',
-                    fontWeight: 600,
-                    color: 'var(--color-text-primary)',
-                    marginBottom: 'var(--space-4)'
-                  }}
-                >
-                  {currentQuestion.question}
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {currentQuestion.options.map((option, optionIndex) => {
-                    const isSelected = quizState.selectedAnswers[quizState.currentQuestionIndex] === optionIndex;
-                    
-                    return (
-                      <button
-                        key={optionIndex}
-                        onClick={() => handleAnswerSelect(optionIndex)}
-                        style={{
-                          width: '100%',
-                          padding: 'var(--space-3)',
-                          textAlign: 'left',
-                          borderRadius: 'var(--radius-md)',
-                          border: `1px solid ${isSelected ? 'var(--color-brand-primary)' : 'var(--color-border)'}`,
-                          background: isSelected ? 'rgba(255, 107, 53, 0.05)' : 'var(--color-bg-secondary)',
-                          color: isSelected ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
-                          transition: 'var(--transition-base)',
-                          cursor: 'pointer'
-                        }}
-                        className="hover:border-opacity-50"
-                      >
-                        <span style={{ fontWeight: 500, marginRight: 'var(--space-2)' }}>
-                          {String.fromCharCode(65 + optionIndex)}.
-                        </span>
-                        {option}
-                      </button>
-                    );
-                  })}
                 </div>
 
-                <div style={{ marginTop: 'var(--space-4)', fontSize: 'var(--font-size-xs)' }}>
+                <div 
+                  style={{
+                    width: '100%',
+                    background: 'var(--color-bg-tertiary)',
+                    borderRadius: 'var(--radius-lg)',
+                    height: '6px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div 
+                    style={{ 
+                      width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
+                      background: 'var(--color-brand-primary)',
+                      height: '6px',
+                      borderRadius: 'var(--radius-lg)',
+                      transition: 'width 0.3s ease'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Question Card */}
+              <div
+                style={{
+                  background: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-6)'
+                }}
+              >
+                {/* Difficulty Badge */}
+                <div style={{ marginBottom: 'var(--space-4)' }}>
                   <span 
                     style={{
-                      padding: '4px 12px',
+                      display: 'inline-block',
+                      padding: '6px 14px',
                       borderRadius: 'var(--radius-lg)',
                       fontSize: 'var(--font-size-xs)',
-                      textTransform: 'capitalize',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
                       background: currentQuestion.difficulty === 'easy' ? 'rgba(34, 197, 94, 0.1)' :
                                   currentQuestion.difficulty === 'medium' ? 'rgba(245, 158, 11, 0.1)' :
                                   'rgba(239, 68, 68, 0.1)',
@@ -427,55 +413,132 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                     {currentQuestion.difficulty}
                   </span>
                 </div>
-              </div>
 
-              {/* Navigation */}
-              <div className="flex justify-between">
-                <button
-                  onClick={handlePrevious}
-                  disabled={quizState.currentQuestionIndex === 0}
-                  className="flex items-center"
+                {/* Question Text */}
+                <h3 
                   style={{
-                    gap: 'var(--space-2)',
-                    padding: 'var(--space-2) var(--space-3)',
-                    fontSize: 'var(--font-size-base)',
-                    color: 'var(--color-text-secondary)',
-                    background: 'var(--color-bg-secondary)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    transition: 'var(--transition-base)',
-                    cursor: quizState.currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
-                    opacity: quizState.currentQuestionIndex === 0 ? 0.5 : 1
-                  }}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </button>
-
-                <button
-                  onClick={handleNext}
-                  disabled={!hasAnsweredCurrent}
-                  className="flex items-center"
-                  style={{
-                    gap: 'var(--space-2)',
-                    padding: 'var(--space-2) var(--space-4)',
-                    fontSize: 'var(--font-size-base)',
+                    fontSize: 'var(--font-size-2xl)',
                     fontWeight: 600,
-                    color: 'white',
-                    background: !hasAnsweredCurrent ? 'var(--color-border)' : 'var(--color-brand-primary)',
-                    border: 'none',
-                    borderRadius: 'var(--radius-md)',
-                    transition: 'var(--transition-base)',
-                    cursor: !hasAnsweredCurrent ? 'not-allowed' : 'pointer'
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4,
+                    marginBottom: 'var(--space-6)'
                   }}
                 >
-                  {isLastQuestion ? 'Finish Quiz' : 'Next'}
-                  {!isLastQuestion && <ChevronRight className="w-4 h-4" />}
-                </button>
+                  {currentQuestion.question}
+                </h3>
+
+                {/* Answer Options */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {currentQuestion.options.map((option, optionIndex) => {
+                    const isSelected = quizState.selectedAnswers[quizState.currentQuestionIndex] === optionIndex;
+                    const optionLetter = String.fromCharCode(65 + optionIndex);
+                    
+                    return (
+                      <button
+                        key={optionIndex}
+                        onClick={() => handleAnswerSelect(optionIndex)}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--space-3)',
+                          padding: 'var(--space-4)',
+                          textAlign: 'left',
+                          borderRadius: 'var(--radius-lg)',
+                          border: `2px solid ${isSelected ? 'var(--color-brand-primary)' : 'var(--color-border)'}`,
+                          background: isSelected ? 'rgba(239, 68, 68, 0.05)' : 'white',
+                          color: 'var(--color-text-primary)',
+                          transition: 'var(--transition-base)',
+                          cursor: 'pointer',
+                          fontSize: 'var(--font-size-base)'
+                        }}
+                        className="hover:border-red-400 hover:shadow-sm"
+                      >
+                        <span 
+                          style={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: 'var(--radius-md)',
+                            fontWeight: 700,
+                            fontSize: 'var(--font-size-base)',
+                            flexShrink: 0,
+                            background: isSelected ? 'var(--color-brand-primary)' : 'var(--color-bg-tertiary)',
+                            color: isSelected ? 'white' : 'var(--color-text-secondary)',
+                            transition: 'var(--transition-base)'
+                          }}
+                        >
+                          {optionLetter}
+                        </span>
+                        <span style={{ flex: 1, lineHeight: 1.5 }}>
+                          {option}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Sticky Footer Navigation */}
+        {!quizState.showResults && (
+          <div
+            style={{
+              flexShrink: 0,
+              padding: 'var(--space-6)',
+              borderTop: '1px solid var(--color-border)',
+              background: 'var(--color-bg-primary)'
+            }}
+          >
+            <div className="flex justify-between">
+              <button
+                onClick={handlePrevious}
+                disabled={quizState.currentQuestionIndex === 0}
+                className="flex items-center"
+                style={{
+                  gap: 'var(--space-2)',
+                  padding: 'var(--space-2) var(--space-3)',
+                  fontSize: 'var(--font-size-base)',
+                  color: 'var(--color-text-secondary)',
+                  background: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'var(--transition-base)',
+                  cursor: quizState.currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+                  opacity: quizState.currentQuestionIndex === 0 ? 0.5 : 1
+                }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+
+              <button
+                onClick={handleNext}
+                disabled={!hasAnsweredCurrent}
+                className="flex items-center"
+                style={{
+                  gap: 'var(--space-2)',
+                  padding: 'var(--space-2) var(--space-4)',
+                  fontSize: 'var(--font-size-base)',
+                  fontWeight: 600,
+                  color: 'white',
+                  background: !hasAnsweredCurrent ? 'var(--color-border)' : 'var(--color-brand-primary)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'var(--transition-base)',
+                  cursor: !hasAnsweredCurrent ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isLastQuestion ? 'Finish Quiz' : 'Next'}
+                {!isLastQuestion && <ChevronRight className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

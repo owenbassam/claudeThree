@@ -123,7 +123,7 @@ export function KeyConcepts({ concepts, onJumpToTime, className = '' }: KeyConce
                     color: 'var(--color-text-secondary)'
                   }}
                 >
-                  "{concept.context}"
+                  &ldquo;{concept.context}&rdquo;
                 </p>
               </div>
             )}

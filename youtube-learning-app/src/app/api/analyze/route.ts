@@ -23,38 +23,19 @@ export async function POST(request: NextRequest) {
     try {
       const analysis = await analyzeTranscriptWithClaude(transcript, videoTitle);
       
-      const fixedQuizQuestions = (analysis.quizQuestions || []).map((question: any) => {
-        if (!question.options || !Array.isArray(question.options)) {
-          return question;
-        }
-        
-        const uniqueOptions = new Set(question.options);
-        if (uniqueOptions.size < question.options.length) {
-          const unique = Array.from(uniqueOptions);
-          while (unique.length < 4) {
-            unique.push(`Option ${unique.length + 1}`);
-          }
-          return {
-            ...question,
-            options: unique.slice(0, 4)
-          };
-        }
-        
-        return question;
-      });
-      
+      // Quiz questions will be generated on-demand, not during initial analysis
       // Validate the analysis structure
       const validatedAnalysis: LearningAnalysis = {
         chapters: analysis.chapters || [],
         keyConcepts: analysis.keyConcepts || [],
-        quizQuestions: fixedQuizQuestions,
+        quizQuestions: [], // Empty - will be loaded on demand
         overallSummary: analysis.overallSummary || 'Summary not available',
         estimatedReadingTime: analysis.estimatedReadingTime || 5,
         difficultyLevel: analysis.difficultyLevel || 'beginner',
         topics: analysis.topics || [],
       };
 
-      console.log(`Analysis completed: ${validatedAnalysis.chapters.length} chapters, ${validatedAnalysis.keyConcepts.length} concepts, ${validatedAnalysis.quizQuestions.length} questions`);
+      console.log(`Analysis completed: ${validatedAnalysis.chapters.length} chapters, ${validatedAnalysis.keyConcepts.length} concepts`);
 
       return NextResponse.json({
         analysis: validatedAnalysis,

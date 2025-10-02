@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractVideoId } from '@/lib/youtube';
 import { extractTranscript } from '@/lib/transcript-extractor';
+import { spawn } from 'child_process';
 
 interface TranscriptSegment {
   text: string;
@@ -79,8 +80,7 @@ export async function POST(request: NextRequest) {
 async function getVideoInfo(videoId: string): Promise<VideoInfo> {
   try {
     // Use yt-dlp to get video metadata including duration
-    const { spawn } = require('child_process');
-    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const videoInfo = await new Promise<any>((resolve, reject) => {
       const ytDlp = spawn('yt-dlp', [
         '--dump-json',

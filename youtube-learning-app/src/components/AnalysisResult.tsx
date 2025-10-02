@@ -1,19 +1,76 @@
 'use client';
 
 import { useState } from 'react';
-import { LearningAnalysis } from '@/types';
-import { Brain, Clock, Target, BookOpen, CheckCircle2, AlertCircle, Play } from 'lucide-react';
+import { LearningAnalysis, QuizQuestion, Flashcard as FlashcardType } from '@/types';
+import { Brain, Clock, Target, BookOpen, Play } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 import { QuizModal } from './QuizModal';
+import { FlashcardModal } from './FlashcardModal';
+import { apiRequest } from '@/lib/api';
 
 interface AnalysisResultProps {
   analysis: LearningAnalysis;
   isLoading?: boolean;
   onJumpToTime?: (timestamp: number) => void;
+  transcript?: any[];
+  videoTitle?: string;
 }
 
-export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: AnalysisResultProps) {
+export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, transcript, videoTitle }: AnalysisResultProps) {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
+  const [quizError, setQuizError] = useState<string | null>(null);
+
+  const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false);
+  const [flashcards, setFlashcards] = useState<FlashcardType[]>([]);
+
+  const handleGenerateFlashcards = () => {
+    // Convert key concepts to flashcards
+    const generatedFlashcards: FlashcardType[] = analysis.keyConcepts.map((concept, index) => ({
+      id: `flashcard-${index}`,
+      front: concept.term,
+      back: concept.definition,
+      category: 'Key Concept',
+      timestamp: concept.timestamp,
+      difficulty: 'medium'
+    }));
+
+    setFlashcards(generatedFlashcards);
+    setIsFlashcardModalOpen(true);
+  };
+
+  const handleGenerateQuiz = async () => {
+    // If quiz already generated, just open the modal
+    if (quizQuestions.length > 0) {
+      setIsQuizModalOpen(true);
+      return;
+    }
+
+    // Generate new quiz
+    setIsGeneratingQuiz(true);
+    setQuizError(null);
+
+    try {
+      const response = await apiRequest<{ questions: QuizQuestion[]; success: boolean }>('/api/generate-quiz', {
+        method: 'POST',
+        body: JSON.stringify({
+          transcript,
+          videoTitle,
+          chapters: analysis.chapters,
+        }),
+      });
+
+      setQuizQuestions(response.questions);
+      setIsQuizModalOpen(true);
+    } catch (error) {
+      console.error('Failed to generate quiz:', error);
+      setQuizError('Failed to generate quiz. Please try again.');
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div 
@@ -117,27 +174,6 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: An
               Key Concepts
             </div>
           </div>
-          <div 
-            className="text-center"
-            style={{
-              padding: 'var(--space-4)',
-              background: 'rgba(107, 140, 174, 0.1)',
-              borderRadius: 'var(--radius-md)'
-            }}
-          >
-            <div 
-              className="font-bold"
-              style={{ 
-                fontSize: 'var(--font-size-2xl)', 
-                color: 'var(--color-accent-blue)' 
-              }}
-            >
-              {analysis.quizQuestions.length}
-            </div>
-            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-              Quiz Questions
-            </div>
-          </div>
         </div>
 
         <p 
@@ -174,7 +210,7 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: An
         </div>
       </div>
 
-      {/* Quiz Questions Preview */}
+      {/* Practice Options */}
       <div 
         style={{
           background: 'var(--color-bg-primary)',
@@ -190,13 +226,186 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: An
             fontSize: 'var(--font-size-xl)', 
             color: 'var(--color-text-primary)',
             gap: 'var(--space-2)',
-            marginBottom: 'var(--space-4)'
+            marginBottom: 'var(--space-2)'
           }}
         >
           <Target className="w-5 h-5" style={{ color: 'var(--color-brand-primary)' }} />
-          Practice Questions
+          Test Your Knowledge
         </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        
+        <p 
+          style={{
+            fontSize: 'var(--font-size-base)',
+            color: 'var(--color-text-secondary)',
+            marginBottom: 'var(--space-6)',
+            lineHeight: 'var(--line-height-base)'
+          }}
+        >
+          Ready to practice? Choose how you'd like to review what you've learned.
+        </p>
+        
+        <div 
+          className="grid md:grid-cols-2"
+          style={{ 
+            gap: 'var(--space-4)'
+          }}
+        >
+          {/* Quiz Option */}
+          <div
+            style={{
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-4)',
+              background: 'var(--color-bg-secondary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-3)'
+            }}
+          >
+            <div className="flex items-start" style={{ gap: 'var(--space-2)' }}>
+              <Target className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-brand-primary)', marginTop: '2px' }} />
+              <div>
+                <h4 
+                  className="font-semibold"
+                  style={{
+                    fontSize: 'var(--font-size-lg)',
+                    color: 'var(--color-text-primary)',
+                    marginBottom: 'var(--space-1)'
+                  }}
+                >
+                  Interactive Quiz
+                </h4>
+                <p 
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-secondary)',
+                    lineHeight: 'var(--line-height-base)',
+                    marginBottom: 'var(--space-2)'
+                  }}
+                >
+                  Test your understanding with AI-generated questions tailored to the video content and complexity.
+                </p>
+                <div 
+                  className="flex items-center"
+                  style={{
+                    gap: 'var(--space-2)',
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-tertiary)',
+                    marginBottom: 'var(--space-3)'
+                  }}
+                >
+                  <span>• Multiple choice</span>
+                  <span>• Instant feedback</span>
+                  <span>• Jump to timestamps</span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleGenerateQuiz}
+              disabled={isGeneratingQuiz}
+              style={{
+                padding: 'var(--space-2) var(--space-4)',
+                background: isGeneratingQuiz ? 'var(--color-border)' : 'var(--color-brand-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--font-size-base)',
+                fontWeight: 600,
+                cursor: isGeneratingQuiz ? 'not-allowed' : 'pointer',
+                transition: 'var(--transition-base)',
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 'var(--space-2)'
+              }}
+              className="hover:opacity-90"
+            >
+              {isGeneratingQuiz ? (
+                <>
+                  <Brain className="w-4 h-4 animate-pulse" />
+                  Generating Quiz...
+                </>
+              ) : (
+                'Start Quiz →'
+              )}
+            </button>
+          </div>
+          
+          {/* Flashcards Option */}
+          <div
+            style={{
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-4)',
+              background: 'var(--color-bg-secondary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-3)'
+            }}
+          >
+            <div className="flex items-start" style={{ gap: 'var(--space-2)' }}>
+              <Brain className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-brand-primary)', marginTop: '2px' }} />
+              <div>
+                <h4 
+                  className="font-semibold"
+                  style={{
+                    fontSize: 'var(--font-size-lg)',
+                    color: 'var(--color-text-primary)',
+                    marginBottom: 'var(--space-1)'
+                  }}
+                >
+                  Study Flashcards
+                </h4>
+                <p 
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-secondary)',
+                    lineHeight: 'var(--line-height-base)',
+                    marginBottom: 'var(--space-2)'
+                  }}
+                >
+                  Review {analysis.keyConcepts.length} key concepts with interactive flashcards for better retention.
+                </p>
+                <div 
+                  className="flex items-center"
+                  style={{
+                    gap: 'var(--space-2)',
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-tertiary)',
+                    marginBottom: 'var(--space-3)'
+                  }}
+                >
+                  <span>• Flip to reveal</span>
+                  <span>• Spaced repetition</span>
+                  <span>• Track progress</span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleGenerateFlashcards}
+              disabled={analysis.keyConcepts.length === 0}
+              style={{
+                padding: 'var(--space-2) var(--space-4)',
+                background: 'transparent',
+                color: analysis.keyConcepts.length === 0 ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--font-size-base)',
+                fontWeight: 600,
+                cursor: analysis.keyConcepts.length === 0 ? 'not-allowed' : 'pointer',
+                transition: 'var(--transition-base)',
+                width: '100%'
+              }}
+              className="hover:border-gray-400 hover:bg-gray-100"
+            >
+              Study with Flashcards →
+            </button>
+          </div>
+        </div>
+        
+        {/* Removed automatic quiz preview - now opt-in via buttons above */}
+        <div style={{ display: 'none' }}>
           {analysis.quizQuestions.slice(0, 1).map((question, index) => (
             <div 
               key={index} 
@@ -276,51 +485,45 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime }: An
               </div>
             </div>
           ))}
-          
-          {analysis.quizQuestions.length > 1 && (
-            <div 
-              className="text-center"
-              style={{ 
-                color: 'var(--color-text-tertiary)',
-                fontSize: 'var(--font-size-xs)',
-                paddingTop: 'var(--space-2)'
-              }}
-            >
-              ... and {analysis.quizQuestions.length - 1} more questions
-            </div>
-          )}
-          
-          <div className="text-center" style={{ paddingTop: 'var(--space-4)' }}>
-            <button
-              onClick={() => setIsQuizModalOpen(true)}
-              className="inline-flex items-center hover:brightness-90"
-              style={{
-                gap: 'var(--space-2)',
-                padding: 'var(--space-2) var(--space-4)',
-                background: 'var(--color-brand-primary)',
-                color: 'white',
-                borderRadius: 'var(--radius-md)',
-                border: 'none',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: 600,
-                transition: 'var(--transition-base)',
-                cursor: 'pointer'
-              }}
-            >
-              <Play className="w-4 h-4" />
-              Take Interactive Quiz ({analysis.quizQuestions.length} questions)
-            </button>
-          </div>
         </div>
       </div>
       
       {/* Quiz Modal */}
-      <QuizModal
-        questions={analysis.quizQuestions}
-        isOpen={isQuizModalOpen}
-        onClose={() => setIsQuizModalOpen(false)}
+      {quizQuestions.length > 0 && (
+        <QuizModal
+          questions={quizQuestions}
+          isOpen={isQuizModalOpen}
+          onClose={() => setIsQuizModalOpen(false)}
+          onJumpToTime={onJumpToTime}
+        />
+      )}
+
+      {/* Flashcard Modal */}
+      <FlashcardModal
+        flashcards={flashcards}
+        isOpen={isFlashcardModalOpen}
+        onClose={() => setIsFlashcardModalOpen(false)}
         onJumpToTime={onJumpToTime}
       />
+
+      {/* Error message */}
+      {quizError && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 'var(--space-4)',
+            right: 'var(--space-4)',
+            background: 'var(--color-error)',
+            color: 'white',
+            padding: 'var(--space-3) var(--space-4)',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-lg)',
+            zIndex: 1000
+          }}
+        >
+          {quizError}
+        </div>
+      )}
     </div>
   );
 }

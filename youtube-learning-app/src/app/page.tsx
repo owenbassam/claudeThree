@@ -52,13 +52,15 @@ export default function Home() {
           </h1>
           
           <p 
-            className="mx-auto"
             style={{
               fontSize: 'var(--font-size-lg)',
               lineHeight: 'var(--line-height-loose)',
               color: 'var(--color-text-secondary)',
               maxWidth: '680px',
-              marginBottom: 'var(--space-12)'
+              marginBottom: 'var(--space-12)',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              textAlign: 'center'
             }}
           >
             AI-powered analysis creates structured chapters, key concepts, and practice quizzes 

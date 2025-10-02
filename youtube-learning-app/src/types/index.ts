@@ -38,10 +38,19 @@ export interface QuizQuestion {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+  category: string;
+  timestamp: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
+
 export interface LearningAnalysis {
   chapters: Chapter[];
   keyConcepts: KeyConcept[];
-  quizQuestions: QuizQuestion[];
+  quizQuestions: QuizQuestion[]; // Will be empty initially, loaded on demand
   overallSummary: string;
   estimatedReadingTime: number;
   difficultyLevel: 'beginner' | 'intermediate' | 'advanced';

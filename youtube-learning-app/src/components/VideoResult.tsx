@@ -206,12 +206,21 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
 
       {/* AI Analysis Results */}
       {isComplete && analysis && (
-        <AnalysisResult analysis={analysis} onJumpToTime={handleJumpToTime} />
+        <AnalysisResult 
+          analysis={analysis} 
+          onJumpToTime={handleJumpToTime}
+          transcript={videoData.transcript}
+          videoTitle={videoData.videoInfo.title}
+        />
       )}
 
       {/* Analysis Loading State */}
       {isAnalyzing && (
-        <AnalysisResult analysis={{} as any} isLoading={true} onJumpToTime={handleJumpToTime} />
+        <AnalysisResult 
+          analysis={{} as any} 
+          isLoading={true} 
+          onJumpToTime={handleJumpToTime}
+        />
       )}
 
       {/* Transcript Preview - only show if no analysis yet */}
@@ -315,7 +324,7 @@ export function VideoResult({ videoData, onReset }: VideoResultProps) {
             lineHeight: 'var(--line-height-base)',
             marginBottom: 'var(--space-3)'
           }}>
-            This video doesn't have captions or transcripts available. Try with a different educational video that has captions enabled.
+            This video doesn&apos;t have captions or transcripts available. Try with a different educational video that has captions enabled.
           </p>
           <div style={{ 
             fontSize: 'var(--font-size-xs)', 

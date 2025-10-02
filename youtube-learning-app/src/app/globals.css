@@ -4,8 +4,8 @@
 /* Anthropic Design System - Design Tokens */
 :root {
   /* Brand Colors */
-  --color-brand-primary: #FF6B35;
-  --color-brand-primary-hover: #E55A2B;
+  --color-brand-primary: #EF4444;
+  --color-brand-primary-hover: #DC2626;
   --color-brand-dark: #1A1A1A;
   --color-brand-light: #FAFAF9;
   
@@ -81,7 +81,7 @@
 
 @theme inline {
   /* Tailwind theme integration */
-  --color-brand-primary: #FF6B35;
+  --color-brand-primary: #EF4444;
   --color-brand-dark: #1A1A1A;
   --color-brand-light: #FAFAF9;
   --font-sans: 'Inter', -apple-system, system-ui, sans-serif;

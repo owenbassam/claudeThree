@@ -105,32 +105,25 @@ Please analyze this educational content and return a JSON response with the foll
       "timestamp": 15
     }
   ],
-  "quizQuestions": [
-    {
-      "question": "What is...?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": 0,
-      "explanation": "Why this is correct...",
-      "timestamp": 20,
-      "difficulty": "easy"
-    }
-  ],
   "overallSummary": "Comprehensive summary of the entire video",
   "estimatedReadingTime": 5,
   "difficultyLevel": "beginner",
   "topics": ["Topic 1", "Topic 2", "Topic 3"]
 }
 
+CRITICAL TIMESTAMP REQUIREMENTS:
+- ALL timestamps (chapter startTime/endTime, keyConcepts timestamp) MUST be EXACT timestamps from the transcript
+- Look at the [MM:SS] markers in the transcript and use those EXACT values (in seconds)
+- DO NOT round or estimate timestamps - use the precise second where the content appears
+- For chapters: startTime should be the exact timestamp where that section begins, endTime where it ends
+- For key concepts: timestamp should be the exact moment when that concept is first introduced or explained
+- If a concept spans multiple segments, use the timestamp where it is FIRST mentioned
+
 Guidelines:
 - Create 2-4 logical chapters based on content flow
 - Identify 3-8 key concepts with clear definitions
-- Generate 3-6 multiple choice questions of varying difficulty
-- Ensure timestamps correspond to actual content
-- Make questions test understanding, not just memorization
 - Use clear, educational language appropriate for the content level
-- CRITICAL: Ensure all 4 answer options for each question are completely different and unique
-- CRITICAL: Never repeat the same answer choice within a single question
-- Double-check that each option (A, B, C, D) has distinct content
+- Focus on breaking down the content into digestible, structured learning materials
 
 Return ONLY the JSON object, no additional text.`;
 
