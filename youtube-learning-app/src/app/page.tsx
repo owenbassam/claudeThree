@@ -1,19 +1,19 @@
 'use client';
 
-import { Sparkles, Brain, Zap, Target } from 'lucide-react';
+import { Sparkles, Brain, Zap, Target, GraduationCap } from 'lucide-react';
 import { VideoInput } from '@/components/VideoInput';
-import { VideoResult } from '@/components/VideoResult';
+import { VideoResultSocratic } from '@/components/VideoResultSocratic';
 import { useVideoProcessor } from '@/hooks/useVideoProcessor';
 
 export default function Home() {
   const { videoData, isLoading, error, processVideo, resetVideo } = useVideoProcessor();
 
-  // Show video result if we have processed data
+  // Show Socratic learning interface if we have processed data
   if (videoData) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
-        <div className="container mx-auto" style={{ padding: 'var(--space-8) var(--space-4)' }}>
-          <VideoResult videoData={videoData} onReset={resetVideo} />
+        <div style={{ padding: 'var(--space-8) 0' }}>
+          <VideoResultSocratic videoData={videoData} onReset={resetVideo} />
         </div>
       </div>
     );
@@ -28,8 +28,8 @@ export default function Home() {
         {/* Hero Header - Anthropic style: large, bold, minimal */}
         <div className="text-center animate-fadeIn" style={{ marginBottom: 'var(--space-16)' }}>
           <div className="flex items-center justify-center mb-8">
-            <Sparkles 
-              className="h-10 w-10 mr-2" 
+            <GraduationCap 
+              className="h-12 w-12" 
               style={{ color: 'var(--color-brand-primary)' }}
             />
           </div>
@@ -45,9 +45,9 @@ export default function Home() {
               margin: '0 auto 32px'
             }}
           >
-            Transform YouTube videos into{' '}
+            Learn from YouTube with your{' '}
             <span style={{ color: 'var(--color-brand-primary)' }}>
-              interactive learning
+              AI Socratic tutor
             </span>
           </h1>
           
@@ -63,8 +63,8 @@ export default function Home() {
               textAlign: 'center'
             }}
           >
-            AI-powered analysis creates structured chapters, key concepts, and practice quizzes 
-            from any educational video—making learning more effective and engaging.
+            An AI tutor that asks <em>you</em> questions, not the other way around. 
+            Prove your understanding through Socratic dialogue. Progress is earned, not given.
           </p>
 
           {/* Video Input - Primary CTA */}
@@ -114,15 +114,15 @@ export default function Home() {
                 color: 'var(--color-text-primary)' 
               }}
             >
-              AI-Powered Analysis
+              Socratic Teaching
             </h3>
             <p style={{ 
               fontSize: 'var(--font-size-base)', 
               lineHeight: 'var(--line-height-base)',
               color: 'var(--color-text-secondary)' 
             }}>
-              Claude 4.5 Sonnet intelligently analyzes video transcripts to extract key concepts 
-              and generate contextual learning materials.
+              An AI tutor that guides you through questions, not lectures. 
+              Discover concepts through dialogue and critical thinking.
             </p>
           </div>
           
@@ -153,15 +153,15 @@ export default function Home() {
                 color: 'var(--color-text-primary)' 
               }}
             >
-              Instant Navigation
+              Progress Gating
             </h3>
             <p style={{ 
               fontSize: 'var(--font-size-base)', 
               lineHeight: 'var(--line-height-base)',
               color: 'var(--color-text-secondary)' 
             }}>
-              Jump to any moment with clickable timestamps. Real-time transcript syncing 
-              keeps you oriented as the video plays.
+              Can't skip ahead until you prove understanding. Each chapter unlocks only 
+              when you demonstrate mastery of the previous one.
             </p>
           </div>
           
@@ -192,15 +192,15 @@ export default function Home() {
                 color: 'var(--color-text-primary)' 
               }}
             >
-              Active Learning
+              Adaptive Difficulty
             </h3>
             <p style={{ 
               fontSize: 'var(--font-size-base)', 
               lineHeight: 'var(--line-height-base)',
               color: 'var(--color-text-secondary)' 
             }}>
-              Test comprehension with auto-generated quizzes. Get immediate feedback 
-              and track your learning progress.
+              The AI adjusts question difficulty based on your performance. 
+              Struggling? Get hints. Excelling? Face deeper challenges.
             </p>
           </div>
         </div>
