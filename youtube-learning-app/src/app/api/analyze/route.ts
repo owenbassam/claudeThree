@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
         topics: analysis.topics || [],
       };
 
-      console.log(`Analysis completed: ${validatedAnalysis.chapters.length} chapters, ${validatedAnalysis.keyConcepts.length} concepts`);
-
       return NextResponse.json({
         analysis: validatedAnalysis,
         success: true,

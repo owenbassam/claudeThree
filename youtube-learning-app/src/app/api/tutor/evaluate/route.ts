@@ -13,7 +13,8 @@ import {
   EvaluationResult,
   Message,
   Checkpoint,
-  LearningAnalysis
+  LearningAnalysis,
+  Chapter
 } from '@/types';
 import { 
   SOCRATIC_SYSTEM_PROMPT,
@@ -95,43 +96,15 @@ export async function POST(request: NextRequest) {
         };
         break;
 
-      case ConversationPhase.PRE_WATCH:
-        // User answered pre-watch question
-        // Instruct them to watch the chapter
-        const currentChapter = analysis.chapters[conversationState.currentChapterIndex];
-        
-        evaluation = {
-          score: 100,
-          passed: true,
-          strengths: [],
-          weaknesses: [],
-          misconceptions: [],
-          needsFollowUp: false,
-          nextPhase: ConversationPhase.WATCHING,
-          canProceed: true,
-          feedback: 'Good thinking!'
-        };
-
-        aiResponse = `Great! Now let's watch the first section: "${currentChapter.title}"
-
-⏯️ Watch from ${formatTime(currentChapter.startTime)} to ${formatTime(currentChapter.endTime)}
-
-Pay close attention to: ${currentChapter.keyPoints[0] || 'the main concepts'}
-
-Let me know when you're done watching!`;
-
-        nextPhase = ConversationPhase.WATCHING;
-        updatedState = {
-          phase: ConversationPhase.WATCHING
-        };
-        break;
-
       case ConversationPhase.WATCHING:
         // User says they finished watching - ask them a comprehension question
         const chapterToAsk = analysis.chapters[conversationState.currentChapterIndex];
         
-        // Check if user is just saying "done" or similar
-        const isDoneMessage = /^(done|finished|i'm done|im done|ready|watched|ok|okay)$/i.test(userAnswer.trim());
+        // Check if user is just saying "done", "continue", or similar (including variations like "done watching")
+        const isDoneMessage = /^(done|finished|ready|watched|ok|okay|continue)(\s+(watching|with\s+video|now))?$/i.test(userAnswer.trim());
+        
+        // Check if user is asking for help/options (not an actual answer attempt)
+        const isHelpRequest = /^(hint|skip|help|simpler|easier|no|i don't know|idk)$/i.test(userAnswer.trim());
         
         if (isDoneMessage) {
           // They just said they're done - now ask the comprehension question
@@ -225,6 +198,7 @@ Write your question as natural conversational text. Be warm and encouraging. Kee
                 [conversationState.currentChapterIndex]: evaluation.score
               },
               checkpoints: [...conversationState.checkpoints, checkpoint],
+              consecutiveFailures: 0, // Reset on success
               userProfile: {
                 ...conversationState.userProfile,
                 overallComprehension: calculateAverageScore({
@@ -246,7 +220,8 @@ Write your question as natural conversational text. Be warm and encouraging. Kee
                 ...conversationState.chapterScores,
                 [conversationState.currentChapterIndex]: evaluation.score
               },
-              checkpoints: [...conversationState.checkpoints, checkpoint]
+              checkpoints: [...conversationState.checkpoints, checkpoint],
+              consecutiveFailures: 0 // Reset on completion
             };
           }
         } else if (evaluation.score >= 50) {
@@ -273,11 +248,23 @@ Write your question as natural conversational text. Be warm and encouraging. Kee
           };
         } else {
           // Needs review - rewatch
-          const focusPoints = evaluation.weaknesses.length > 0 
-            ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
-            : `• ${chapterToEvaluate.keyPoints[0] || 'the main concepts'}`;
+          // Track failure
+          const newConsecutiveFailures = (conversationState.consecutiveFailures || 0) + 1;
+          const newTotalFailures = (conversationState.totalFailures || 0) + 1;
           
-          aiResponse = `I can see you're working hard, but let's review this section together.
+          // Check for frustration
+          const frustrationCheck = checkFrustration(newConsecutiveFailures, chapterToEvaluate);
+          
+          if (frustrationCheck.isStuck) {
+            // User is stuck - offer help options
+            aiResponse = frustrationCheck.helpMessage!;
+          } else {
+            // Normal review message
+            const focusPoints = evaluation.weaknesses.length > 0 
+              ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
+              : `• ${chapterToEvaluate.keyPoints[0] || 'the main concepts'}`;
+            
+            aiResponse = `I can see you're working hard, but let's review this section together.
 
 ${evaluation.feedback}
 
@@ -285,11 +272,14 @@ Try rewatching ${formatTime(chapterToEvaluate.startTime)} to ${formatTime(chapte
 ${focusPoints}
 
 Let me know when you're ready to try again!`;
+          }
 
           nextPhase = ConversationPhase.REVIEW;
           
           updatedState = {
-            phase: ConversationPhase.REVIEW
+            phase: ConversationPhase.REVIEW,
+            consecutiveFailures: newConsecutiveFailures,
+            totalFailures: newTotalFailures
           };
         }
         break;
@@ -337,6 +327,7 @@ Let me know when you're ready to try again!`;
                 [conversationState.currentChapterIndex]: evaluation.score
               },
               checkpoints: [...conversationState.checkpoints, checkpoint],
+              consecutiveFailures: 0, // Reset on success
               userProfile: {
                 ...conversationState.userProfile,
                 overallComprehension: calculateAverageScore({
@@ -348,9 +339,17 @@ Let me know when you're ready to try again!`;
               }
             };
           } else {
+            // Course complete! Save final chapter score
             aiResponse = generateCheckpointPrompt(postWatchChapter, evaluation.score);
             nextPhase = ConversationPhase.COMPLETE;
-            updatedState = { phase: ConversationPhase.COMPLETE };
+            updatedState = { 
+              phase: ConversationPhase.COMPLETE,
+              chapterScores: {
+                ...conversationState.chapterScores,
+                [conversationState.currentChapterIndex]: evaluation.score
+              },
+              checkpoints: [...conversationState.checkpoints, checkpoint]
+            };
           }
         } else if (evaluation.score >= 50) {
           // Needs follow-up
@@ -375,12 +374,23 @@ Let me know when you're ready to try again!`;
             }
           };
         } else {
-          // Needs review
-          const focusPoints = evaluation.weaknesses.length > 0 
-            ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
-            : `• ${postWatchChapter.keyPoints[0] || 'the main concepts'}`;
+          // Needs review - track failure
+          const newConsecutiveFailures = (conversationState.consecutiveFailures || 0) + 1;
+          const newTotalFailures = (conversationState.totalFailures || 0) + 1;
           
-          aiResponse = `I can see you're working hard, but let's review this section together.
+          // Check for frustration
+          const frustrationCheck = checkFrustration(newConsecutiveFailures, postWatchChapter);
+          
+          if (frustrationCheck.isStuck) {
+            // User is stuck - offer help options
+            aiResponse = frustrationCheck.helpMessage!;
+          } else {
+            // Normal review message
+            const focusPoints = evaluation.weaknesses.length > 0 
+              ? evaluation.weaknesses.map(w => `• ${w}`).join('\n')
+              : `• ${postWatchChapter.keyPoints[0] || 'the main concepts'}`;
+            
+            aiResponse = `I can see you're working hard, but let's review this section together.
 
 ${evaluation.feedback}
 
@@ -388,9 +398,14 @@ Try rewatching ${formatTime(postWatchChapter.startTime)} to ${formatTime(postWat
 ${focusPoints}
 
 Let me know when you're ready to try again!`;
+          }
 
           nextPhase = ConversationPhase.REVIEW;
-          updatedState = { phase: ConversationPhase.REVIEW };
+          updatedState = { 
+            phase: ConversationPhase.REVIEW,
+            consecutiveFailures: newConsecutiveFailures,
+            totalFailures: newTotalFailures
+          };
         }
         break;
 
@@ -436,33 +451,57 @@ Let me know when you're ready to try again!`;
                 ...conversationState.chapterScores,
                 [conversationState.currentChapterIndex]: evaluation.score
               },
-              checkpoints: [...conversationState.checkpoints, checkpoint]
+              checkpoints: [...conversationState.checkpoints, checkpoint],
+              consecutiveFailures: 0 // Reset on success
             };
           } else {
             aiResponse = generateCheckpointPrompt(followUpChapter, evaluation.score);
             nextPhase = ConversationPhase.COMPLETE;
-            updatedState = { phase: ConversationPhase.COMPLETE };
+            updatedState = { 
+              phase: ConversationPhase.COMPLETE,
+              consecutiveFailures: 0 // Reset on completion
+            };
           }
         } else {
-          // Still struggling, suggest review
-          aiResponse = `Let's take a step back. ${evaluation.feedback}
+          // Still struggling, suggest review - track failure
+          const newConsecutiveFailures = (conversationState.consecutiveFailures || 0) + 1;
+          const newTotalFailures = (conversationState.totalFailures || 0) + 1;
+          
+          // Check for frustration
+          const frustrationCheck = checkFrustration(newConsecutiveFailures, followUpChapter);
+          
+          if (frustrationCheck.isStuck) {
+            // User is stuck - offer help options
+            aiResponse = frustrationCheck.helpMessage!;
+          } else {
+            // Normal review message
+            aiResponse = `Let's take a step back. ${evaluation.feedback}
 
 Rewatch ${formatTime(followUpChapter.startTime)} to ${formatTime(followUpChapter.endTime)} one more time.
 
 Would you like a hint, or shall we try again after rewatching?`;
+          }
           
           nextPhase = ConversationPhase.REVIEW;
-          updatedState = { phase: ConversationPhase.REVIEW };
+          updatedState = { 
+            phase: ConversationPhase.REVIEW,
+            consecutiveFailures: newConsecutiveFailures,
+            totalFailures: newTotalFailures
+          };
         }
         break;
 
       case ConversationPhase.CHECKPOINT:
-        // User confirmed they're ready for next chapter
-        const nextChapterIndex = conversationState.currentChapterIndex;
+        // User clicked Continue - move to next chapter
+        const nextChapterIndex = conversationState.currentChapterIndex + 1;
         const nextChapter = analysis.chapters[nextChapterIndex];
         
-        const nextPreWatchPrompt = generatePreWatchPrompt(nextChapter, userAnswer);
-        aiResponse = await callClaude(nextPreWatchPrompt, updatedMessages);
+        // Skip pre-watch, go straight to watching instruction with timestamps
+        aiResponse = `Great! Now watch "${nextChapter.title}" (${formatTime(nextChapter.startTime)} to ${formatTime(nextChapter.endTime)}).
+
+Pay attention to: ${nextChapter.keyPoints[0] || 'the main concepts'}
+
+When you're done, click the "Continue" button below.`;
         
         evaluation = {
           score: 100,
@@ -471,34 +510,158 @@ Would you like a hint, or shall we try again after rewatching?`;
           weaknesses: [],
           misconceptions: [],
           needsFollowUp: false,
-          nextPhase: ConversationPhase.PRE_WATCH,
+          nextPhase: ConversationPhase.WATCHING,
           canProceed: true,
           feedback: 'Moving forward'
         };
 
-        nextPhase = ConversationPhase.PRE_WATCH;
-        updatedState = { phase: ConversationPhase.PRE_WATCH };
+        nextPhase = ConversationPhase.WATCHING;
+        updatedState = { 
+          phase: ConversationPhase.WATCHING,
+          currentChapterIndex: nextChapterIndex
+        };
         break;
 
       case ConversationPhase.REVIEW:
-        // User says they rewatched, ask comprehension question again
+        // Check if user is asking for help
         const reviewChapter = analysis.chapters[conversationState.currentChapterIndex];
-        const reviewPrompt = generatePostWatchPrompt(reviewChapter, userAnswer, updatedMessages);
+        const isReviewHelpRequest = /^(hint|simpler|easier|skip)$/i.test(userAnswer.trim());
         
+        if (isReviewHelpRequest) {
+          // User wants a simpler question, hint, or rewatch
+          if (/simpler|easier/i.test(userAnswer)) {
+            // Generate a simpler, more direct question
+            aiResponse = `Okay, let's break this down into a simpler question:
+
+**What is the main purpose of having a coordinate system when working with vectors?**
+
+Think about what the video showed - why do we use x, y, z coordinates to describe vectors? What does it allow us to do?`;
+            
+            nextPhase = ConversationPhase.REVIEW;
+            evaluation = {
+              score: 0,
+              passed: false,
+              strengths: [],
+              weaknesses: [],
+              misconceptions: [],
+              needsFollowUp: true,
+              nextPhase: ConversationPhase.REVIEW,
+              canProceed: false,
+              feedback: 'Simplified question'
+            };
+            updatedState = { phase: ConversationPhase.REVIEW };
+            break;
+          } else if (/hint/i.test(userAnswer)) {
+            // They want a hint - tell them to use the hint button
+            aiResponse = `I'd love to give you a hint! Click the 💡 **Hint** button below the input box to get progressive hints that will guide you without giving away the answer.
+
+Try clicking it now, and you'll get your first hint!`;
+            
+            nextPhase = ConversationPhase.REVIEW;
+            evaluation = {
+              score: 0,
+              passed: false,
+              strengths: [],
+              weaknesses: [],
+              misconceptions: [],
+              needsFollowUp: true,
+              nextPhase: ConversationPhase.REVIEW,
+              canProceed: false,
+              feedback: 'Hint button guidance'
+            };
+            updatedState = { phase: ConversationPhase.REVIEW };
+            break;
+          } else if (/rewatch|skip/i.test(userAnswer)) {
+            // Encourage rewatching with guidance
+            aiResponse = `Good idea! Let's rewatch ${formatTime(reviewChapter.startTime)} to ${formatTime(reviewChapter.endTime)}.
+
+This time, focus specifically on: ${reviewChapter.keyPoints[0]}
+
+When you're done watching, try answering the question again. You've got this!`;
+            
+            nextPhase = ConversationPhase.REVIEW;
+            evaluation = {
+              score: 0,
+              passed: false,
+              strengths: [],
+              weaknesses: [],
+              misconceptions: [],
+              needsFollowUp: true,
+              nextPhase: ConversationPhase.REVIEW,
+              canProceed: false,
+              feedback: 'Rewatch guidance'
+            };
+            updatedState = { phase: ConversationPhase.REVIEW };
+            break;
+          }
+        }
+        
+        // Normal review path - evaluate their answer
+        const reviewPrompt = generatePostWatchPrompt(reviewChapter, userAnswer, updatedMessages);
         const reviewEval = await callClaudeForEvaluation(reviewPrompt, updatedMessages);
         evaluation = reviewEval;
         
         if (evaluation.score >= 70) {
-          aiResponse = `Much better! ${evaluation.feedback}`;
-          nextPhase = ConversationPhase.CHECKPOINT;
-          // Continue to checkpoint logic...
+          // PASSED after review!
+          const reviewCheckpoint: Checkpoint = {
+            id: `cp_${now}`,
+            chapterId: reviewChapter.title,
+            chapterIndex: conversationState.currentChapterIndex,
+            passed: true,
+            score: evaluation.score,
+            questionsAsked: updatedMessages.filter(m => m.role === 'ai').length,
+            hintsUsed: conversationState.userProfile.hintsUsedTotal,
+            timestamp: now,
+            feedback: 'Improved after review'
+          };
+
+          const nextChapterIndex = conversationState.currentChapterIndex + 1;
+          const hasMoreChapters = nextChapterIndex < analysis.chapters.length;
+
+          if (hasMoreChapters) {
+            const nextChapter = analysis.chapters[nextChapterIndex];
+            aiResponse = generateCheckpointPrompt(reviewChapter, evaluation.score, nextChapter);
+            nextPhase = ConversationPhase.CHECKPOINT;
+            
+            updatedState = {
+              phase: ConversationPhase.CHECKPOINT,
+              unlockedChapters: [...conversationState.unlockedChapters, nextChapterIndex],
+              chapterScores: {
+                ...conversationState.chapterScores,
+                [conversationState.currentChapterIndex]: evaluation.score
+              },
+              checkpoints: [...conversationState.checkpoints, reviewCheckpoint],
+              consecutiveFailures: 0, // Reset on success
+              userProfile: {
+                ...conversationState.userProfile,
+                overallComprehension: calculateAverageScore({
+                  ...conversationState.chapterScores,
+                  [conversationState.currentChapterIndex]: evaluation.score
+                }),
+                responseQuality: evaluation.score >= 85 ? 'excellent' : 
+                                evaluation.score >= 70 ? 'adequate' : 'struggling'
+              }
+            };
+          } else {
+            // Course complete after review!
+            aiResponse = generateCheckpointPrompt(reviewChapter, evaluation.score);
+            nextPhase = ConversationPhase.COMPLETE;
+            
+            updatedState = {
+              phase: ConversationPhase.COMPLETE,
+              chapterScores: {
+                ...conversationState.chapterScores,
+                [conversationState.currentChapterIndex]: evaluation.score
+              },
+              checkpoints: [...conversationState.checkpoints, reviewCheckpoint]
+            };
+          }
         } else {
           aiResponse = evaluation.nextQuestion || 
                       "Let's try a different approach. " + evaluation.feedback;
           nextPhase = ConversationPhase.FOLLOW_UP;
+          updatedState = { phase: nextPhase };
         }
-        
-        updatedState = { phase: nextPhase };
         break;
 
       default:
@@ -511,7 +674,7 @@ Would you like a hint, or shall we try again after rewatching?`;
       role: 'ai',
       content: aiResponse,
       timestamp: Date.now(),
-      messageType: nextPhase === ConversationPhase.CHECKPOINT ? 'checkpoint' : 'question',
+      messageType: (nextPhase === ConversationPhase.CHECKPOINT || nextPhase === ConversationPhase.COMPLETE) ? 'checkpoint' : 'question',
       chapterId: conversationState.currentChapterIndex >= 0 ? 
                  analysis.chapters[conversationState.currentChapterIndex]?.title : undefined
     };
@@ -697,6 +860,28 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Detect if user is frustrated and offer help
+ */
+function checkFrustration(consecutiveFailures: number, chapter: Chapter): { isStuck: boolean; helpMessage?: string } {
+  if (consecutiveFailures >= 2) {
+    return {
+      isStuck: true,
+      helpMessage: `I notice you're having trouble with this section. That's completely normal - this is challenging material! Let me help you out.
+
+Here are your options:
+
+1. **Type "hint"** - I'll guide you toward the key concepts using the hint system (click the 💡 button)
+2. **Type "rewatch"** - I'll have you rewatch ${formatTime(chapter.startTime)} to ${formatTime(chapter.endTime)} focusing on: ${chapter.keyPoints[0]}
+3. **Type "simpler"** - I'll ask you an easier, more direct question
+
+Just type one of those words, or give the question another try!`
+    };
+  }
+  
+  return { isStuck: false };
 }
 
 /**

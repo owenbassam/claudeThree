@@ -7,8 +7,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Lightbulb, CheckCircle, Lock } from 'lucide-react';
+import { Send, Loader2, Lightbulb, CheckCircle, Lock, ArrowRight, Map } from 'lucide-react';
 import { ConversationState, Message, LearningAnalysis, EvaluationResult, HintLevel } from '@/types';
+import { ProgressMap } from './ProgressMap';
 
 interface SocraticChatProps {
   conversationState: ConversationState;
@@ -27,6 +28,7 @@ export function SocraticChat({
   const [isLoading, setIsLoading] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [currentHintLevel, setCurrentHintLevel] = useState<1 | 2 | 3 | 4>(1);
+  const [showProgress, setShowProgress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -37,7 +39,11 @@ export function SocraticChat({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userInput.trim() || isLoading) return;
+    // For watching/checkpoint phases, send "continue" automatically
+    const isWatchingOrCheckpoint = conversationState.phase === 'watching' || conversationState.phase === 'checkpoint';
+    const answerToSend = isWatchingOrCheckpoint ? 'continue' : userInput.trim();
+    
+    if (!answerToSend || isLoading) return;
 
     setIsLoading(true);
 
@@ -47,7 +53,7 @@ export function SocraticChat({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversationState,
-          userAnswer: userInput.trim(),
+          userAnswer: answerToSend,
           analysis
         })
       });
@@ -61,8 +67,10 @@ export function SocraticChat({
       // Update conversation state
       onStateUpdate(data.conversationState);
       
-      // Reset input
-      setUserInput('');
+      // Reset input (only if not watching/checkpoint)
+      if (!isWatchingOrCheckpoint) {
+        setUserInput('');
+      }
       setCurrentHintLevel(1);
       setShowHints(false);
 
@@ -140,6 +148,7 @@ export function SocraticChat({
   const currentChapter = getCurrentChapter();
 
   return (
+    <>
     <div 
       className="flex flex-col h-full"
       style={{
@@ -176,15 +185,26 @@ export function SocraticChat({
               </h3>
             </div>
             
-            {/* Progress indicator */}
-            <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
-              <span style={{ 
+            <button
+              onClick={() => setShowProgress(!showProgress)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                padding: 'var(--space-2) var(--space-3)',
                 fontSize: 'var(--font-size-xs)',
-                color: 'var(--color-text-tertiary)'
-              }}>
-                Chapter {conversationState.currentChapterIndex + 1} of {analysis.chapters.length}
-              </span>
-            </div>
+                color: showProgress ? 'white' : 'var(--color-text-secondary)',
+                background: showProgress ? 'var(--color-brand-primary)' : 'transparent',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'var(--transition-base)'
+              }}
+              className={showProgress ? '' : 'hover:border-[var(--color-brand-primary)]'}
+            >
+              <Map className="w-4 h-4" />
+              {showProgress ? 'Hide' : 'Show'} Progress
+            </button>
           </div>
         </div>
       )}
@@ -225,88 +245,193 @@ export function SocraticChat({
           background: 'var(--color-bg-secondary)'
         }}
       >
-        {/* Hint Button */}
-        {!isLoading && conversationState.phase !== 'checkpoint' && conversationState.phase !== 'complete' && (
-          <div style={{ marginBottom: 'var(--space-2)' }}>
-            <button
-              onClick={handleGetHint}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 'var(--space-1)',
-                padding: 'var(--space-1) var(--space-2)',
-                fontSize: 'var(--font-size-xs)',
-                color: 'var(--color-text-secondary)',
-                background: 'transparent',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                transition: 'var(--transition-base)'
-              }}
-              className="hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]"
-            >
-              <Lightbulb className="w-3.5 h-3.5" />
-              Need a hint? (Level {currentHintLevel})
-            </button>
-            {conversationState.userProfile.hintsUsedTotal > 0 && (
-              <span style={{ 
-                marginLeft: 'var(--space-2)',
-                fontSize: 'var(--font-size-xs)',
-                color: 'var(--color-text-tertiary)'
-              }}>
-                {conversationState.userProfile.hintsUsedTotal} hints used total
-              </span>
-            )}
+        {conversationState.phase === 'complete' ? (
+          /* Course Complete - No input allowed */
+          <div style={{
+            padding: 'var(--space-4)',
+            textAlign: 'center',
+            color: 'var(--color-text-secondary)',
+            fontSize: 'var(--font-size-sm)'
+          }}>
+            🎉 You've completed this learning session!
           </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex" style={{ gap: 'var(--space-2)' }}>
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type your answer..."
+        ) : conversationState.phase === 'watching' || conversationState.phase === 'checkpoint' ? (
+          /* Continue Button for watching/checkpoint phases */
+          <button
+            onClick={() => handleSubmit(new Event('submit') as any)}
             disabled={isLoading}
             style={{
-              flex: 1,
-              padding: 'var(--space-2) var(--space-3)',
-              fontSize: 'var(--font-size-base)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-bg-primary)',
-              color: 'var(--color-text-primary)',
-              outline: 'none'
-            }}
-            className="focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[rgba(239,68,68,0.1)]"
-          />
-          <button
-            type="submit"
-            disabled={!userInput.trim() || isLoading}
-            style={{
-              padding: 'var(--space-2) var(--space-4)',
+              width: '100%',
+              padding: 'var(--space-3) var(--space-4)',
               fontSize: 'var(--font-size-base)',
               fontWeight: 600,
-              background: (!userInput.trim() || isLoading) ? 'var(--color-border)' : 'var(--color-brand-primary)',
+              background: isLoading ? 'var(--color-border)' : 'var(--color-brand-primary)',
               color: 'white',
               border: 'none',
               borderRadius: 'var(--radius-md)',
-              cursor: (!userInput.trim() || isLoading) ? 'not-allowed' : 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
               transition: 'var(--transition-base)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 'var(--space-1)'
+              justifyContent: 'center',
+              gap: 'var(--space-2)'
             }}
-            className={!userInput.trim() || isLoading ? '' : 'hover:brightness-90'}
+            className={isLoading ? '' : 'hover:brightness-90'}
           >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
+            <ArrowRight className="w-4 h-4" />
+            Continue
           </button>
-        </form>
+        ) : (
+          /* Normal input for answering questions */
+          <>
+            {/* Hint Button */}
+            {!isLoading && (
+              <div style={{ marginBottom: 'var(--space-2)' }}>
+                <button
+                  onClick={handleGetHint}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-1)',
+                    padding: 'var(--space-1) var(--space-2)',
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-secondary)',
+                    background: 'transparent',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    transition: 'var(--transition-base)'
+                  }}
+                  className="hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]"
+                >
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  Need a hint? (Level {currentHintLevel})
+                </button>
+                {conversationState.userProfile.hintsUsedTotal > 0 && (
+                  <span style={{ 
+                    marginLeft: 'var(--space-2)',
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-tertiary)'
+                  }}>
+                    {conversationState.userProfile.hintsUsedTotal} hints used total
+                  </span>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex" style={{ gap: 'var(--space-2)' }}>
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                placeholder="Type your answer..."
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  padding: 'var(--space-2) var(--space-3)',
+                  fontSize: 'var(--font-size-base)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--color-bg-primary)',
+                  color: 'var(--color-text-primary)',
+                  outline: 'none'
+                }}
+                className="focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[rgba(239,68,68,0.1)]"
+              />
+              <button
+                type="submit"
+                disabled={!userInput.trim() || isLoading}
+                style={{
+                  padding: 'var(--space-2) var(--space-4)',
+                  fontSize: 'var(--font-size-base)',
+                  fontWeight: 600,
+                  background: (!userInput.trim() || isLoading) ? 'var(--color-border)' : 'var(--color-brand-primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: (!userInput.trim() || isLoading) ? 'not-allowed' : 'pointer',
+                  transition: 'var(--transition-base)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)'
+                }}
+                className={!userInput.trim() || isLoading ? '' : 'hover:brightness-90'}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </div>
+
+      {/* Progress Map Overlay */}
+      {showProgress && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            padding: 'var(--space-4)'
+          }}
+          onClick={() => setShowProgress(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--color-bg-primary)',
+              borderRadius: 'var(--radius-lg)',
+              maxWidth: '800px',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}
+          >
+            <div
+              style={{
+                padding: 'var(--space-6)',
+                borderBottom: '1px solid var(--color-border)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+                Learning Progress
+              </h2>
+              <button
+                onClick={() => setShowProgress(false)}
+                style={{
+                  fontSize: 'var(--font-size-xl)',
+                  color: 'var(--color-text-tertiary)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: 'var(--space-2)' }}>
+              <ProgressMap
+                conversationState={conversationState}
+                analysis={analysis}
+                onChapterClick={() => {}} // Disabled
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -340,75 +465,93 @@ function MessageBubble({
       className={`flex ${isAI ? 'justify-start' : 'justify-end'}`}
       style={{ maxWidth: '100%' }}
     >
-      <div
-        style={{
-          maxWidth: '85%',
-          padding: 'var(--space-3)',
-          borderRadius: 'var(--radius-lg)',
-          background: isCheckpoint ? 'rgba(34, 197, 94, 0.1)' :
-                     isHint ? 'rgba(251, 191, 36, 0.1)' :
-                     isAI ? 'var(--color-bg-secondary)' : 'var(--color-brand-primary)',
-          color: isAI ? 'var(--color-text-primary)' : 'white',
-          border: isCheckpoint ? '1px solid rgba(34, 197, 94, 0.3)' :
-                  isHint ? '1px solid rgba(251, 191, 36, 0.3)' :
-                  isAI ? '1px solid var(--color-border)' : 'none'
-        }}
-      >
-        {/* Checkpoint icon */}
-        {isCheckpoint && (
-          <div className="flex items-center" style={{ gap: 'var(--space-1)', marginBottom: 'var(--space-2)', color: 'rgb(34, 197, 94)' }}>
-            <CheckCircle className="w-4 h-4" />
-            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>Checkpoint Passed!</span>
+      <div style={{ maxWidth: '85%', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        {/* Timestamp above bubble for user messages */}
+        {!isAI && (
+          <div 
+            style={{ 
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-tertiary)',
+              textAlign: 'right',
+              paddingRight: 'var(--space-1)'
+            }}
+          >
+            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         )}
-
-        {/* Message content */}
-        <div 
-          style={{ 
-            fontSize: 'var(--font-size-base)',
-            lineHeight: 'var(--line-height-relaxed)',
-            whiteSpace: 'pre-wrap'
+        
+        {/* Message Bubble */}
+        <div
+          style={{
+            padding: 'var(--space-3)',
+            borderRadius: 'var(--radius-lg)',
+            background: isCheckpoint ? 'rgba(34, 197, 94, 0.1)' :
+                       isHint ? 'rgba(251, 191, 36, 0.1)' :
+                       isAI ? 'var(--color-bg-secondary)' : 'var(--color-brand-primary)',
+            color: isAI ? 'var(--color-text-primary)' : 'white',
+            border: isCheckpoint ? '1px solid rgba(34, 197, 94, 0.3)' :
+                    isHint ? '1px solid rgba(251, 191, 36, 0.3)' :
+                    isAI ? '1px solid var(--color-border)' : 'none'
           }}
         >
-          {message.content}
-        </div>
+          {/* Checkpoint icon */}
+          {isCheckpoint && (
+            <div className="flex items-center" style={{ gap: 'var(--space-1)', marginBottom: 'var(--space-2)', color: 'rgb(34, 197, 94)' }}>
+              <CheckCircle className="w-4 h-4" />
+              <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>Checkpoint Passed!</span>
+            </div>
+          )}
 
-        {/* Clickable timestamps */}
-        {timestamps.length > 0 && onVideoSeek && (
-          <div style={{ marginTop: 'var(--space-2)', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            {timestamps.map((match, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleTimestampClick(match)}
-                style={{
-                  padding: 'var(--space-1) var(--space-2)',
-                  fontSize: 'var(--font-size-xs)',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  color: 'var(--color-brand-primary)',
-                  border: '1px solid var(--color-brand-primary)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  fontFamily: 'monospace'
-                }}
-                className="hover:bg-[rgba(239,68,68,0.2)]"
-              >
-                ⏯ {match[0]}
-              </button>
-            ))}
+          {/* Message content */}
+          <div 
+            style={{ 
+              fontSize: 'var(--font-size-base)',
+              lineHeight: 'var(--line-height-relaxed)',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {message.content}
+          </div>
+
+          {/* Clickable timestamps */}
+          {timestamps.length > 0 && onVideoSeek && (
+            <div style={{ marginTop: 'var(--space-2)', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              {timestamps.map((match, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTimestampClick(match)}
+                  style={{
+                    padding: 'var(--space-1) var(--space-2)',
+                    fontSize: 'var(--font-size-xs)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: 'var(--color-brand-primary)',
+                    border: '1px solid var(--color-brand-primary)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    fontFamily: 'monospace'
+                  }}
+                  className="hover:bg-[rgba(239,68,68,0.2)]"
+                >
+                  ⏯ {match[0]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Timestamp below bubble for AI messages */}
+        {isAI && (
+          <div 
+            style={{ 
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-tertiary)',
+              textAlign: 'left',
+              paddingLeft: 'var(--space-1)'
+            }}
+          >
+            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         )}
-
-        {/* Timestamp */}
-        <div 
-          style={{ 
-            marginTop: 'var(--space-2)',
-            fontSize: 'var(--font-size-xs)',
-            color: isAI ? 'var(--color-text-tertiary)' : 'rgba(255,255,255,0.7)',
-            textAlign: 'right'
-          }}
-        >
-          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
       </div>
     </div>
   );

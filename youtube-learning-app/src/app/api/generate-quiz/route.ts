@@ -100,8 +100,6 @@ Return ONLY a JSON array in this exact format:
       difficulty: q.difficulty || 'medium',
     }));
 
-    console.log(`Generated ${validatedQuestions.length} quiz questions`);
-
     return NextResponse.json({
       questions: validatedQuestions,
       success: true,

@@ -276,7 +276,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   marginBottom: 'var(--space-1)'
                 }}
               >
-                Current transcript ({formatTime(currentSegment.start)})
+                Current transcript
               </p>
               <p 
                 style={{

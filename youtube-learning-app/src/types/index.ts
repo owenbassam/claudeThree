@@ -201,6 +201,10 @@ export interface ConversationState {
   // Conversation history
   messages: Message[];
   
+  // Frustration detection
+  consecutiveFailures: number;    // Track failed attempts in a row
+  totalFailures: number;          // Total failures across session
+  
   // Tracking
   startedAt: number;
   lastActivityAt: number;

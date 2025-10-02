@@ -40,8 +40,6 @@ export async function POST(request: NextRequest) {
     // Call external transcript API
     const transcriptApiUrl = process.env.TRANSCRIPT_API_URL || 'http://localhost:3001';
     
-    console.log(`Calling transcript API: ${transcriptApiUrl}/api/transcript`);
-    
     const response = await fetch(`${transcriptApiUrl}/api/transcript`, {
       method: 'POST',
       headers: {

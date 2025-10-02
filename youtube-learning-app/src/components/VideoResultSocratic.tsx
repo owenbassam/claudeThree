@@ -9,11 +9,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { VideoData, ConversationState, VideoDataWithConversation } from '@/types';
-import { Clock, FileText, AlertTriangle, CheckCircle, Loader2, Brain, ArrowLeft } from 'lucide-react';
+import { Clock, FileText, AlertTriangle, CheckCircle, Loader2, Brain, ArrowLeft, BookOpen, GraduationCap, Layers } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 import { VideoPlayer } from './VideoPlayer';
 import { SocraticChat } from './SocraticChat';
-import { ProgressMap } from './ProgressMap';
+import { KeyConcepts } from './KeyConcepts';
+import { QuizModal } from './QuizModal';
+import { FlashcardModal } from './FlashcardModal';
 
 interface VideoResultSocraticProps {
   videoData: VideoDataWithConversation;
@@ -27,7 +29,11 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
     videoData.conversationState || null
   );
   const [isInitializing, setIsInitializing] = useState(false);
-  const [showProgressMap, setShowProgressMap] = useState(false);
+  const [showKeyConcepts, setShowKeyConcepts] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [showFlashcards, setShowFlashcards] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState(analysis?.quizQuestions || []);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const videoPlayerRef = useRef<any>(null);
   
   const hasTranscript = transcript && transcript.length > 0;
@@ -91,6 +97,41 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
       );
     } catch (err) {
       console.error('Failed to save conversation state:', err);
+    }
+  };
+
+  const handleShowQuiz = async () => {
+    // If quiz questions already exist, just show them
+    if (quizQuestions.length > 0) {
+      setShowQuiz(true);
+      return;
+    }
+
+    // Otherwise, generate them
+    setIsLoadingQuiz(true);
+    try {
+      const response = await fetch('/api/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId: videoInfo.id,
+          transcript,
+          analysis
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate quiz');
+      }
+
+      const data = await response.json();
+      setQuizQuestions(data.questions);
+      setShowQuiz(true);
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      alert('Sorry, couldn\'t generate the quiz. Please try again.');
+    } finally {
+      setIsLoadingQuiz(false);
     }
   };
 
@@ -214,22 +255,6 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
           New Video
         </button>
 
-        <button
-          onClick={() => setShowProgressMap(!showProgressMap)}
-          style={{
-            padding: 'var(--space-2) var(--space-3)',
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-text-secondary)',
-            background: showProgressMap ? 'var(--color-brand-primary)' : 'transparent',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            transition: 'var(--transition-base)'
-          }}
-          className={showProgressMap ? 'text-white' : 'hover:border-[var(--color-brand-primary)]'}
-        >
-          {showProgressMap ? 'Hide' : 'Show'} Progress
-        </button>
       </div>
 
       {/* Video Title */}
@@ -240,14 +265,68 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
           padding: '0 var(--space-4)'
         }}
       >
-        <h1 style={{ 
-          fontSize: 'var(--font-size-xl)',
-          fontWeight: 700,
-          color: 'var(--color-text-primary)',
-          marginBottom: 'var(--space-2)'
-        }}>
-          {videoInfo.title}
-        </h1>
+        <div className="flex items-start justify-between" style={{ marginBottom: 'var(--space-2)' }}>
+          <h1 style={{ 
+            fontSize: 'var(--font-size-xl)',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            flex: 1
+          }}>
+            {videoInfo.title}
+          </h1>
+          
+          {/* Quiz and Flashcard buttons */}
+          <div className="flex items-center" style={{ gap: 'var(--space-2)', marginLeft: 'var(--space-4)' }}>
+            <button
+              onClick={handleShowQuiz}
+              disabled={isLoadingQuiz}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                padding: 'var(--space-2) var(--space-3)',
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)',
+                background: 'transparent',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                cursor: isLoadingQuiz ? 'wait' : 'pointer',
+                transition: 'var(--transition-base)',
+                opacity: isLoadingQuiz ? 0.6 : 1
+              }}
+              className="hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]"
+            >
+              {isLoadingQuiz ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <GraduationCap className="w-4 h-4" />
+              )}
+              {isLoadingQuiz ? 'Generating...' : 'Quiz'}
+            </button>
+
+            <button
+              onClick={() => setShowFlashcards(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                padding: 'var(--space-2) var(--space-3)',
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)',
+                background: 'transparent',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'var(--transition-base)'
+              }}
+              className="hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]"
+            >
+              <Layers className="w-4 h-4" />
+              Flashcards
+            </button>
+          </div>
+        </div>
+        
         <div className="flex items-center flex-wrap" style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
           <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
             <Clock className="w-3.5 h-3.5" />
@@ -265,29 +344,6 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
         </div>
       </div>
 
-      {/* Progress Map (collapsible) */}
-      {showProgressMap && conversationState && analysis && (
-        <div 
-          style={{ 
-            maxWidth: 'var(--container-max-width)',
-            margin: '0 auto var(--space-6)',
-            padding: '0 var(--space-4)'
-          }}
-        >
-          <ProgressMap
-            conversationState={conversationState}
-            analysis={analysis}
-            onChapterClick={(index) => {
-              // Optional: jump to chapter start time
-              const chapter = analysis.chapters[index];
-              if (chapter) {
-                handleJumpToTime(chapter.startTime);
-              }
-            }}
-          />
-        </div>
-      )}
-
       {/* Main Content: Video + Chat Split Screen */}
       <div 
         style={{
@@ -303,7 +359,7 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
             alignItems: 'start'
           }}
         >
-          {/* Video Player */}
+          {/* Video Player + Key Concepts */}
           <div style={{ position: 'sticky', top: 'var(--space-4)' }}>
             <VideoPlayer
               ref={videoPlayerRef}
@@ -312,6 +368,16 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
               onTimeUpdate={handleTimeUpdate}
               className="w-full"
             />
+            
+            {/* Key Concepts below video */}
+            {analysis && analysis.keyConcepts.length > 0 && (
+              <div style={{ marginTop: 'var(--space-4)' }}>
+                <KeyConcepts 
+                  concepts={analysis.keyConcepts}
+                  onJumpToTime={handleJumpToTime}
+                />
+              </div>
+            )}
           </div>
 
           {/* Socratic Chat */}
@@ -354,6 +420,91 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      {analysis && (
+        <>
+          {showKeyConcepts && (
+            <div 
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 50,
+                padding: 'var(--space-4)'
+              }}
+              onClick={() => setShowKeyConcepts(false)}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: 'var(--color-bg-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  maxWidth: '800px',
+                  maxHeight: '80vh',
+                  overflow: 'auto',
+                  width: '100%'
+                }}
+              >
+                <div style={{ 
+                  padding: 'var(--space-6)',
+                  borderBottom: '1px solid var(--color-border)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
+                    Key Concepts
+                  </h2>
+                  <button
+                    onClick={() => setShowKeyConcepts(false)}
+                    style={{
+                      fontSize: 'var(--font-size-xl)',
+                      color: 'var(--color-text-tertiary)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <KeyConcepts 
+                  concepts={analysis.keyConcepts}
+                  onJumpToTime={handleJumpToTime}
+                />
+              </div>
+            </div>
+          )}
+
+          {showQuiz && quizQuestions.length > 0 && (
+            <QuizModal
+              questions={quizQuestions}
+              isOpen={showQuiz}
+              onClose={() => setShowQuiz(false)}
+              onJumpToTime={handleJumpToTime}
+            />
+          )}
+
+          {showFlashcards && analysis.keyConcepts && (
+            <FlashcardModal
+              flashcards={analysis.keyConcepts.map((concept, idx) => ({
+                id: `flashcard-${idx}`,
+                front: concept.term,
+                back: `${concept.definition}\n\nContext: ${concept.context}`,
+                category: 'Key Concept',
+                timestamp: concept.timestamp
+              }))}
+              isOpen={showFlashcards}
+              onClose={() => setShowFlashcards(false)}
+              onJumpToTime={handleJumpToTime}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

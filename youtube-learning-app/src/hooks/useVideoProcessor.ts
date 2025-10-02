@@ -72,10 +72,6 @@ export function useVideoProcessor() {
             analysis: analysisResponse.analysis,
             processingStatus: 'complete'
           } : null);
-          
-          if (analysisResponse.warning) {
-            console.warn('Analysis warning:', analysisResponse.warning);
-          }
 
         } catch (analysisError) {
           console.error('Analysis failed:', analysisError);

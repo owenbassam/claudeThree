@@ -21,18 +21,22 @@ export function ProgressMap({
   onChapterClick 
 }: ProgressMapProps) {
   const getChapterStatus = (chapterIndex: number): 'locked' | 'current' | 'unlocked' | 'completed' => {
-    if (chapterIndex === conversationState.currentChapterIndex) {
-      return 'current';
-    }
-    
+    // Check completion first - even if it's the current chapter, if it has a score, it's completed
     if (conversationState.chapterScores[chapterIndex] !== undefined) {
       return 'completed';
     }
     
+    // Then check if it's the current active chapter
+    if (chapterIndex === conversationState.currentChapterIndex) {
+      return 'current';
+    }
+    
+    // Then check if it's unlocked but not started
     if (conversationState.unlockedChapters.includes(chapterIndex)) {
       return 'unlocked';
     }
     
+    // Otherwise it's locked
     return 'locked';
   };
 
@@ -98,36 +102,6 @@ export function ProgressMap({
             />
           </div>
         </div>
-
-        {/* Average Score */}
-        {completedChapters > 0 && (
-          <div 
-            style={{
-              padding: 'var(--space-3)',
-              background: 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <span style={{ 
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-secondary)'
-            }}>
-              Average Comprehension
-            </span>
-            <span style={{ 
-              fontSize: 'var(--font-size-lg)',
-              fontWeight: 700,
-              color: conversationState.userProfile.overallComprehension >= 85 ? 'rgb(34, 197, 94)' :
-                     conversationState.userProfile.overallComprehension >= 70 ? 'var(--color-brand-primary)' :
-                     'rgb(251, 191, 36)'
-            }}>
-              {conversationState.userProfile.overallComprehension}/100
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Chapter Nodes */}
@@ -138,7 +112,6 @@ export function ProgressMap({
         {analysis.chapters.map((chapter, index) => {
           const status = getChapterStatus(index);
           const score = getChapterScore(index);
-          const isClickable = status !== 'locked';
 
           return (
             <ChapterNode
@@ -147,8 +120,8 @@ export function ProgressMap({
               index={index}
               status={status}
               score={score}
-              isClickable={isClickable}
-              onClick={() => isClickable && onChapterClick?.(index)}
+              isClickable={false}
+              onClick={() => {}}
             />
           );
         })}
