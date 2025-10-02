@@ -16,14 +16,12 @@ RUN pip3 install --no-cache-dir --break-system-packages yt-dlp
 # Create app directory
 WORKDIR /app
 
-# Copy package files from transcript-api subdirectory
-COPY transcript-api/package*.json ./
+# Copy everything from context (Railway will set context to repo root)
+COPY . .
 
-# Install dependencies
+# Change to transcript-api directory and install dependencies
+WORKDIR /app/transcript-api
 RUN npm ci --only=production
-
-# Copy app source from transcript-api subdirectory
-COPY transcript-api/ .
 
 # Expose port
 EXPOSE 3001
