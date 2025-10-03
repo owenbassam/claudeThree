@@ -52,10 +52,6 @@ export default function Home() {
         <div className="text-center animate-fadeIn" style={{ 
           marginBottom: 'var(--space-12)'
         }}>
-          <div className="flex items-center justify-center" style={{ marginBottom: 'var(--space-2)' }}>
-            <span style={{ fontSize: '64px' }}>🪨</span>
-          </div>
-          
           <h1 
             className="font-bold"
             style={{ 

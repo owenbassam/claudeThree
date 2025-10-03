@@ -34,7 +34,7 @@ body::after {
   background-position: top left;
   background-repeat: no-repeat;
   animation: slideDownLeft 20s linear infinite;
-  z-index: -1;
+  z-index: -3;
 }
 
 body::after {
@@ -53,16 +53,16 @@ body::after {
 
 .boulder {
   position: fixed;
-  width: 160px;
-  height: 160px;
-  top: 239px;
-  left: 1210px;
-  background-image: url('/sisyphus-boulder.png');
+  width: 80px;
+  height: 80px;
+  top: 280px;
+  left: 1240px;
+  background-image: url('/rock_1faa8.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   animation: rollInPlace 3s linear infinite;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
 }
 
@@ -80,13 +80,13 @@ body.video-loaded::after {
 /* Reverse animations when streak is reset */
 @keyframes slideUpRight {
   0% {
-    transform: translate(1058px, -558px) rotate(2.4deg);
+    transform: translate(-1058px, 558px) rotate(2.4deg);
   }
   50% {
     transform: translate(0, 0) rotate(2.4deg);
   }
   100% {
-    transform: translate(-1058px, 558px) rotate(2.4deg);
+    transform: translate(1058px, -558px) rotate(2.4deg);
   }
 }
 
@@ -99,16 +99,45 @@ body.video-loaded::after {
   }
 }
 
+/* First cycle with easing */
+@keyframes slideUpRightEased {
+  0% {
+    transform: translate(-1058px, 558px) rotate(2.4deg);
+  }
+  50% {
+    transform: translate(0, 0) rotate(2.4deg);
+  }
+  100% {
+    transform: translate(1058px, -558px) rotate(2.4deg);
+  }
+}
+
+@keyframes slideDownLeftEased {
+  0% {
+    transform: translate(1058px, -558px) rotate(2.4deg);
+  }
+  50% {
+    transform: translate(0, 0) rotate(2.4deg);
+  }
+  100% {
+    transform: translate(-1058px, 558px) rotate(2.4deg);
+  }
+}
+
 body.streak-reset::before,
 body.streak-reset::after {
-  animation: slideUpRight 20s linear infinite !important;
-  animation-direction: reverse !important;
-  z-index: 99999 !important;
+  animation: slideUpRightEased 20s ease-out 1, slideUpRight 20s linear infinite !important;
+  animation-delay: 0s, 20s !important;
+  z-index: 99997 !important;
+}
+
+body.streak-reset::after {
+  animation-delay: -10s, 10s !important;
 }
 
 body.streak-reset .boulder {
   animation: rollReverse 3s linear infinite !important;
-  z-index: 99999 !important;
+  z-index: 99998 !important;
 }
 
 body.streak-reset .sisyphus {
@@ -118,14 +147,30 @@ body.streak-reset .sisyphus {
 /* Bring background to front during streak increment */
 body.streak-celebrating::before,
 body.streak-celebrating::after {
-  z-index: 99999 !important;
+  animation: slideDownLeftEased 20s ease-in 1, slideDownLeft 20s linear infinite !important;
+  animation-delay: 0s, 20s !important;
+  z-index: 99997 !important;
 }
 
 body.streak-celebrating .boulder {
-  z-index: 99999 !important;
+  z-index: 99998 !important;
 }
 
 body.streak-celebrating .sisyphus {
+  z-index: 99999 !important;
+}
+
+/* Bring background to front on hover - preserves current animations */
+body.streak-hover::before,
+body.streak-hover::after {
+  z-index: 99997 !important;
+}
+
+body.streak-hover .boulder {
+  z-index: 99998 !important;
+}
+
+body.streak-hover .sisyphus {
   z-index: 99999 !important;
 }
 

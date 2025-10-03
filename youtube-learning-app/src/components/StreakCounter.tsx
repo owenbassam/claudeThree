@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 export function StreakCounter() {
   const [streak, setStreak] = useState(0);
+  const [hoverOverlay, setHoverOverlay] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Load streak from localStorage on mount
@@ -24,9 +25,43 @@ export function StreakCounter() {
     };
   }, []);
 
+  const handleMouseEnter = () => {
+    // Create hover overlay with blur
+    const overlay = document.createElement('div');
+    overlay.id = 'streak-hover-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      backdrop-filter: blur(8px);
+      z-index: 50000;
+      pointer-events: none;
+    `;
+    document.body.appendChild(overlay);
+    setHoverOverlay(overlay);
+
+    // Add hover class to bring PNGs to front
+    document.body.classList.add('streak-hover');
+  };
+
+  const handleMouseLeave = () => {
+    // Remove hover class
+    document.body.classList.remove('streak-hover');
+
+    // Remove overlay
+    if (hoverOverlay) {
+      hoverOverlay.remove();
+      setHoverOverlay(null);
+    }
+  };
+
   return (
     <div 
       className="streak-counter"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
         position: 'fixed',
         bottom: '20px',
@@ -37,11 +72,12 @@ export function StreakCounter() {
         borderRadius: '12px',
         border: '2px solid var(--color-border)',
         boxShadow: 'var(--shadow-md)',
-        zIndex: 10,
+        zIndex: 100000,
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
         fontFamily: 'var(--font-sans)',
+        cursor: 'pointer',
       }}
     >
       <span style={{ fontSize: '24px' }}>🔥</span>
@@ -77,7 +113,7 @@ export function incrementStreak() {
   // Dispatch custom event to update UI
   window.dispatchEvent(new CustomEvent('streakUpdate', { detail: { streak: newStreak } }));
   
-  // Create overlay to dim content
+  // Create overlay to blur content
   const overlay = document.createElement('div');
   overlay.id = 'streak-overlay';
   overlay.style.cssText = `
@@ -86,7 +122,7 @@ export function incrementStreak() {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
     z-index: 50000;
     pointer-events: none;
   `;
@@ -110,7 +146,7 @@ export function resetStreak() {
   // Dispatch custom event to update UI
   window.dispatchEvent(new CustomEvent('streakUpdate', { detail: { streak: 0 } }));
   
-  // Create overlay to dim content
+  // Create overlay to blur content
   const overlay = document.createElement('div');
   overlay.id = 'streak-overlay';
   overlay.style.cssText = `
@@ -119,7 +155,7 @@ export function resetStreak() {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
     z-index: 50000;
     pointer-events: none;
   `;

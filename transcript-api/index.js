@@ -63,6 +63,7 @@ async function extractTranscript(videoUrl) {
       '--skip-download',
       '--extractor-args', 'youtube:player_client=android,ios',
       '--user-agent', 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; GB) gzip',
+      '--cookies-from-browser', 'chrome',
       '--output', path.join(tempDir, '%(title)s.%(ext)s'),
       videoUrl
     ]);
