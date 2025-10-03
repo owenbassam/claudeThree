@@ -51,22 +51,45 @@ app.post('/api/transcript', async (req, res) => {
 
 /**
  * Extract transcript using yt-dlp
+ * Uses multiple strategies to bypass bot detection
  */
 async function extractTranscript(videoUrl) {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'transcript-'));
   
   return new Promise((resolve, reject) => {
-    const ytDlp = spawn('yt-dlp', [
+    // Build args array with anti-bot detection measures
+    const args = [
       '--write-subs',
       '--write-auto-subs',
       '--sub-lang', 'en',
       '--skip-download',
-      '--extractor-args', 'youtube:player_client=android,ios',
-      '--user-agent', 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; GB) gzip',
-      '--cookies-from-browser', 'chrome',
+      // Use multiple player clients as fallback
+      '--extractor-args', 'youtube:player_client=android,ios,web,tv_embedded',
+      // Simulate Android YouTube app
+      '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 14; en_US)',
+      // Add additional headers to mimic real requests
+      '--add-header', 'Accept-Language:en-US,en;q=0.9',
+      '--add-header', 'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      '--add-header', 'Accept-Encoding:gzip, deflate, br',
+      '--add-header', 'DNT:1',
+      '--add-header', 'Connection:keep-alive',
+      '--add-header', 'Upgrade-Insecure-Requests:1',
+      // Reduce rate limiting
+      '--sleep-requests', '1',
+      '--sleep-interval', '5',
+      '--max-sleep-interval', '10',
+      // Output format
       '--output', path.join(tempDir, '%(title)s.%(ext)s'),
-      videoUrl
-    ]);
+    ];
+    
+    // Only add cookies in development (skip in production/containers)
+    if (process.env.NODE_ENV !== 'production' && process.env.USE_COOKIES !== 'false') {
+      args.splice(args.length - 1, 0, '--cookies-from-browser', 'chrome');
+    }
+    
+    args.push(videoUrl);
+    
+    const ytDlp = spawn('yt-dlp', args);
 
     let stderr = '';
 
