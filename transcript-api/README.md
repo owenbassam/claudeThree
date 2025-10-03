@@ -2,9 +2,18 @@
 
 A production-ready serverless API for extracting YouTube video transcripts with bot detection bypass using Webshare residential rotating proxies.
 
+**Built for the Anthropic Sonnet 4.5 Challenge @ UMD** — Critical infrastructure component solving YouTube's bot detection challenges
+
 ## Overview
 
 This API provides reliable YouTube transcript extraction for the YouTube Learning Platform. It uses the `youtube-transcript-api` Python library with Webshare residential proxies to bypass YouTube's cloud provider IP blocking.
+
+### The Challenge
+One of the most significant technical challenges during the 48-hour competition was overcoming YouTube's aggressive bot detection. Cloud provider IPs (AWS, GCP, Azure, Vercel) are automatically blocked from accessing transcripts. This API demonstrates Claude Sonnet 4.5's problem-solving capabilities in:
+- Researching and implementing proxy solutions
+- Debugging authentication failures across multiple platforms
+- Migrating from Railway (failed) to Vercel (successful)
+- Configuring residential rotating proxies correctly
 
 ## Features
 
@@ -300,16 +309,43 @@ For issues or questions:
 - Test with known working video IDs
 - Review Webshare proxy status
 
+## Competition Context
+
+**Anthropic Sonnet 4.5 Challenge @ UMD**
+
+This API represents a significant portion of the 48-hour development challenge. Key achievements with Claude Sonnet 4.5:
+
+### Problem-Solving Journey
+1. **Initial Approach**: Tried yt-dlp with Node.js Express server
+2. **First Blocker**: YouTube bot detection blocking cloud IPs
+3. **Research Phase**: Discovered residential proxy requirements
+4. **Platform Issues**: Railway Docker Python installation failures
+5. **Migration**: Successfully switched to Vercel serverless
+6. **Proxy Integration**: Tested free datacenter proxies (failed)
+7. **Solution**: Implemented Webshare residential rotating proxies
+8. **Success**: Production-ready API with reliable transcript extraction
+
+### Claude Sonnet 4.5's Contributions
+- **Extended Thinking**: Worked through multiple failed approaches without giving up
+- **Code Generation**: Created Python serverless function from scratch
+- **Debugging**: Identified and fixed API version incompatibilities
+- **System Design**: Architected fallback logic and error handling
+- **Documentation**: Comprehensive testing and verification procedures
+
 ## License
 
-Private and proprietary.
+Built for educational purposes as part of the Anthropic Sonnet 4.5 Challenge.
 
 ## Author
 
-Owen Bassam
+**Owen Bassam**  
+University of Maryland  
+Claude Builder Club Member
 
 ## Acknowledgments
 
+- **Anthropic** for Claude Sonnet 4.5 and its extended thinking capabilities
 - **youtube-transcript-api**: Core transcript extraction library
 - **Webshare**: Reliable residential proxy service
 - **Vercel**: Serverless hosting platform
+- **University of Maryland** for supporting innovation

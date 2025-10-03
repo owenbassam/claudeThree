@@ -1,34 +1,39 @@
 # YouTube Learning Platform
 
-An AI-powered learning platform that transforms YouTube videos into interactive educational experiences with Socratic tutoring, flashcards, quizzes, and progress tracking.
+> **Built for the Anthropic Sonnet 4.5 Challenge @ UMD**  
+> *48-hour app challenge pushing the limits of AI-assisted coding*
+
+An AI-powered learning platform that transforms YouTube videos into interactive educational experiences with Socratic tutoring, flashcards, quizzes, and progress tracking. Built entirely with Claude Sonnet 4.5 assistance in under 48 hours.
 
 ## 🌟 Features
 
-- **AI-Powered Analysis**: Automatically extracts and analyzes video transcripts using AWS Bedrock (Claude 3)
+- **AI-Powered Analysis**: Automatically extracts and analyzes video transcripts using AWS Bedrock (Claude Sonnet 4.5)
 - **Socratic Tutoring**: Interactive AI tutor that guides learning through thoughtful questions
+- **Intelligent Hints**: Context-aware help system for struggling learners
 - **Flashcards**: Auto-generated flashcards with key concepts and definitions
 - **Quiz Generation**: Adaptive quizzes based on video content with instant feedback
 - **Progress Tracking**: Visual learning path with chapter completion and streak counters
 - **Export Functionality**: Download flashcards and quizzes in Markdown format
 - **Animated UI**: Engaging Sisyphus-themed climbing animation for answer streaks
+- **Production-Ready**: Fully deployed on Vercel with reliable transcript extraction
 
 ## 🏗️ Architecture
 
 This project consists of two main services:
 
 ### 1. YouTube Learning App (`youtube-learning-app/`)
-- **Framework**: Next.js 14 with TypeScript
-- **Styling**: Tailwind CSS
-- **AI Provider**: AWS Bedrock (Claude 3 Sonnet)
+- **Framework**: Next.js 14 with TypeScript and App Router
+- **Styling**: Tailwind CSS with custom animations
+- **AI Provider**: AWS Bedrock (Claude Sonnet 4.5 for development, Claude 3 Sonnet for production)
 - **Deployment**: Vercel
 - **Features**: Main application with video processing, AI tutoring, and learning tools
 
 ### 2. Transcript API (`transcript-api/`)
-- **Framework**: Python serverless function
-- **Library**: youtube-transcript-api
-- **Proxy**: Webshare residential rotating proxies
-- **Deployment**: Vercel
+- **Framework**: Python 3.9 serverless function
+- **Library**: youtube-transcript-api with Webshare integration
+- **Infrastructure**: Vercel serverless with residential rotating proxies
 - **Purpose**: Reliable YouTube transcript extraction with bot detection bypass
+- **Challenge**: Overcame YouTube's cloud IP blocking through proxy configuration
 
 ## 🚀 Quick Start
 
@@ -166,20 +171,42 @@ The system adapts to user responses, providing hints when needed and adjusting d
 ### Export & Study Tools
 Users can export flashcards and quizzes to Markdown files for offline study and review.
 
-## 🤝 Contributing
+## 🏆 Competition Submission
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+**Anthropic Sonnet 4.5 Challenge @ UMD**
+- **Challenge Period**: October 1-3, 2025 (48 hours)
+- **Development Time**: ~48 hours
+- **AI Assistant**: Claude Sonnet 4.5
+- **Submission Date**: October 3, 2025
 
-## 📄 License
+### What Makes This Special
 
-This project is private and proprietary.
+This entire project was conceived, architected, and built with Claude Sonnet 4.5 assistance in under 48 hours. The AI helped with:
+- Full-stack architecture design
+- Next.js 14 app structure with TypeScript
+- AWS Bedrock integration for AI tutoring
+- Python serverless API with proxy configuration
+- Complex state management and UI animations
+- Deployment configuration for Vercel
+- Debugging and problem-solving throughout
+
+The project demonstrates Claude Sonnet 4.5's capabilities in:
+- **Complex Agent Reasoning**: Multi-step tutoring logic with state machines
+- **Production-Ready Code**: Deployed, functional application with error handling
+- **System Design**: Microservices architecture with API separation
+- **Extended Thinking**: Solving bot detection and proxy configuration challenges
+- **Refactoring Judgment**: Migrating from multiple failed approaches to working solutions
 
 ## 👤 Author
 
-Owen Bassam
+**Owen Bassam**  
+University of Maryland  
+Claude Builder Club Member
 
 ## 🙏 Acknowledgments
 
-- AWS Bedrock for Claude 3 AI capabilities
-- Webshare for reliable proxy services
-- YouTube transcript API community
+- **Anthropic** for hosting the Sonnet 4.5 Challenge and Claude Builder Club
+- **Claude Sonnet 4.5** for exceptional AI-assisted development capabilities
+- **AWS Bedrock** for Claude 3 model hosting
+- **Webshare** for residential proxy services
+- **University of Maryland** for supporting student innovation

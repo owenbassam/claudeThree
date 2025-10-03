@@ -2,9 +2,13 @@
 
 > Transform YouTube videos into interactive learning experiences with AI-powered Socratic tutoring.
 
+**Built for the Anthropic Sonnet 4.5 Challenge @ UMD** — Developed in 48 hours with Claude Sonnet 4.5
+
 ## Overview
 
-An intelligent learning platform built with Next.js 14 and AWS Bedrock that converts YouTube videos into structured learning experiences. The application uses Claude 3 AI to provide Socratic tutoring, generate study materials, and track progress through an engaging, gamified interface.
+An intelligent learning platform built with Next.js 14 and AWS Bedrock that converts YouTube videos into structured learning experiences. The application uses Claude AI to provide Socratic tutoring, generate study materials, and track progress through an engaging, gamified interface.
+
+This project showcases what's possible when combining Claude Sonnet 4.5's extended thinking capabilities with production-ready web development. Built entirely within the 48-hour competition timeframe.
 
 ## Features
 
@@ -41,9 +45,9 @@ An intelligent learning platform built with Next.js 14 and AWS Bedrock that conv
 - **Lucide React**: Modern icon system
 
 ### AI & Backend
-- **AWS Bedrock**: Claude 3 Sonnet AI model
-- **Transcript API**: External service for reliable transcript extraction
-- **Next.js API Routes**: Server-side processing
+- **AWS Bedrock**: Claude AI models (Sonnet 4.5 for development, 3 Sonnet for production)
+- **Transcript API**: External serverless service with residential proxies
+- **Next.js API Routes**: Server-side processing and AI orchestration
 
 ### State Management
 - **React Hooks**: useState, useEffect for local state
@@ -273,16 +277,32 @@ Add all required environment variables in the Vercel project settings:
 - Input validation on all user-submitted data
 - CORS configured for transcript API
 
+## Competition Context
+
+**Anthropic Sonnet 4.5 Challenge @ UMD**
+- **Timeline**: 48-hour development challenge (October 1-3, 2025)
+- **AI Assistant**: Claude Sonnet 4.5
+- **Development Approach**: AI-assisted full-stack development
+- **Highlights**: 
+  - Overcame complex proxy configuration for transcript extraction
+  - Built complete Socratic tutoring system with state management
+  - Designed and implemented animated progress tracking
+  - Deployed production-ready application on Vercel
+
 ## License
 
-Private and proprietary.
+Built for educational purposes as part of the Anthropic Sonnet 4.5 Challenge.
 
 ## Author
 
-Owen Bassam
+**Owen Bassam**  
+University of Maryland  
+Claude Builder Club Member
 
 ## Acknowledgments
 
-- AWS Bedrock for Claude 3 AI capabilities
-- Next.js team for excellent framework
-- Tailwind CSS for utility-first styling
+- **Anthropic** for Claude Sonnet 4.5 and the challenge opportunity
+- **AWS Bedrock** for Claude AI model hosting
+- **Next.js & Vercel** for excellent full-stack framework and hosting
+- **Tailwind CSS** for rapid UI development
+- **University of Maryland** for supporting innovation
