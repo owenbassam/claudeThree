@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Lightbulb, CheckCircle, Lock, ArrowRight, Map } from 'lucide-react';
 import { ConversationState, Message, LearningAnalysis, EvaluationResult, HintLevel } from '@/types';
 import { ProgressMap } from './ProgressMap';
+import { incrementStreak, resetStreak } from './StreakCounter';
 
 interface SocraticChatProps {
   conversationState: ConversationState;
@@ -63,6 +64,18 @@ export function SocraticChat({
       }
 
       const data = await response.json();
+      
+      // Update streak based on evaluation result (only for actual answers, not continue buttons)
+      if (!isWatchingOrCheckpoint && data.evaluation && data.evaluation.score !== undefined) {
+        if (data.evaluation.passed && data.evaluation.score >= 70) {
+          // Correct answer - increment streak
+          incrementStreak();
+        } else if (data.evaluation.score < 50) {
+          // Poor answer - reset streak
+          resetStreak();
+        }
+        // Scores between 50-69 don't affect streak (partial credit)
+      }
       
       // Update conversation state
       onStateUpdate(data.conversationState);
@@ -421,13 +434,11 @@ export function SocraticChat({
                 ×
               </button>
             </div>
-            <div style={{ padding: 'var(--space-2)' }}>
-              <ProgressMap
-                conversationState={conversationState}
-                analysis={analysis}
-                onChapterClick={() => {}} // Disabled
-              />
-            </div>
+            <ProgressMap
+              conversationState={conversationState}
+              analysis={analysis}
+              onChapterClick={() => {}} // Disabled
+            />
           </div>
         </div>
       )}

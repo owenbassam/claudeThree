@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Flashcard as FlashcardType } from '@/types';
-import { X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, CheckCircle2, Download } from 'lucide-react';
 import { Flashcard } from './Flashcard';
 import { formatTime } from '@/lib/youtube';
 
@@ -15,14 +15,12 @@ interface FlashcardModalProps {
 
 export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: FlashcardModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [masteredCards, setMasteredCards] = useState<Set<string>>(new Set());
   const [resetFlip, setResetFlip] = useState(false);
 
   if (!isOpen || flashcards.length === 0) return null;
 
   const currentCard = flashcards[currentIndex];
   const progress = ((currentIndex + 1) / flashcards.length) * 100;
-  const masteredCount = masteredCards.size;
 
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
@@ -40,17 +38,30 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
     }
   };
 
-  const handleMarkMastered = () => {
-    const newMastered = new Set(masteredCards);
-    if (masteredCards.has(currentCard.id)) {
-      newMastered.delete(currentCard.id);
-    } else {
-      newMastered.add(currentCard.id);
-    }
-    setMasteredCards(newMastered);
-  };
+  const handleExport = () => {
+    // Create text content for export
+    let content = '# Flashcards\n\n';
+    flashcards.forEach((card, index) => {
+      content += `## Card ${index + 1}\n\n`;
+      content += `**Front:** ${card.front}\n\n`;
+      content += `**Back:** ${card.back}\n\n`;
+      if (card.timestamp !== undefined) {
+        content += `**Timestamp:** ${formatTime(card.timestamp)}\n\n`;
+      }
+      content += '---\n\n';
+    });
 
-  const isMastered = masteredCards.has(currentCard.id);
+    // Create and download file
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `flashcards-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div
@@ -101,23 +112,43 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
                 marginTop: 'var(--space-1)'
               }}
             >
-              Card {currentIndex + 1} of {flashcards.length} • {masteredCount} mastered
+              Card {currentIndex + 1} of {flashcards.length}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              color: 'var(--color-text-tertiary)',
-              transition: 'var(--transition-fast)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 'var(--space-1)'
-            }}
-            className="hover:text-gray-700"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button
+              onClick={handleExport}
+              style={{
+                color: 'var(--color-text-secondary)',
+                transition: 'var(--transition-fast)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 'var(--space-1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)'
+              }}
+              className="hover:text-[var(--color-brand-primary)]"
+              title="Export flashcards"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                color: 'var(--color-text-tertiary)',
+                transition: 'var(--transition-fast)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 'var(--space-1)'
+              }}
+              className="hover:text-gray-700"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -179,28 +210,6 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
               ⏱ {formatTime(currentCard.timestamp)}
             </button>
 
-            <button
-              onClick={handleMarkMastered}
-              className="flex items-center"
-              style={{
-                gap: 'var(--space-1)',
-                fontSize: 'var(--font-size-xs)',
-                color: isMastered ? 'var(--color-success)' : 'var(--color-text-tertiary)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 'var(--space-1)',
-                transition: 'var(--transition-fast)'
-              }}
-            >
-              <CheckCircle2
-                className="w-4 h-4"
-                style={{
-                  fill: isMastered ? 'var(--color-success)' : 'none'
-                }}
-              />
-              {isMastered ? 'Mastered' : 'Mark as mastered'}
-            </button>
           </div>
         </div>
 

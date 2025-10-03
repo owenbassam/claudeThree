@@ -1,6 +1,159 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Sisyphus Mountain Background Animation */
+@keyframes slideDownLeft {
+  0% {
+    transform: translate(1058px, -558px) rotate(2.4deg);
+  }
+  50% {
+    transform: translate(0, 0) rotate(2.4deg);
+  }
+  100% {
+    transform: translate(-1058px, 558px) rotate(2.4deg);
+  }
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #FAFAF9;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1512px;
+  height: 797px;
+  background-image: url('/sisyphus-mountain.png');
+  background-size: 1814px auto;
+  background-position: top left;
+  background-repeat: no-repeat;
+  animation: slideDownLeft 20s linear infinite;
+  z-index: -1;
+}
+
+body::after {
+  animation-delay: -10s;
+}
+
+/* Boulder Rolling Animation */
+@keyframes rollInPlace {
+  0% {
+    transform: rotate(2.4deg);
+  }
+  100% {
+    transform: rotate(362.4deg);
+  }
+}
+
+.boulder {
+  position: fixed;
+  width: 160px;
+  height: 160px;
+  top: 239px;
+  left: 1210px;
+  background-image: url('/sisyphus-boulder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: rollInPlace 3s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Stop animations when video is loaded */
+body.video-loaded .boulder {
+  animation: none;
+  transform: rotate(2.4deg);
+}
+
+body.video-loaded::before,
+body.video-loaded::after {
+  animation: none !important;
+}
+
+/* Reverse animations when streak is reset */
+@keyframes slideUpRight {
+  0% {
+    transform: translate(1058px, -558px) rotate(2.4deg);
+  }
+  50% {
+    transform: translate(0, 0) rotate(2.4deg);
+  }
+  100% {
+    transform: translate(-1058px, 558px) rotate(2.4deg);
+  }
+}
+
+@keyframes rollReverse {
+  0% {
+    transform: rotate(2.4deg);
+  }
+  100% {
+    transform: rotate(-357.6deg);
+  }
+}
+
+body.streak-reset::before,
+body.streak-reset::after {
+  animation: slideUpRight 20s linear infinite !important;
+  animation-direction: reverse !important;
+  z-index: 99999 !important;
+}
+
+body.streak-reset .boulder {
+  animation: rollReverse 3s linear infinite !important;
+  z-index: 99999 !important;
+}
+
+body.streak-reset .sisyphus {
+  z-index: 99999 !important;
+}
+
+/* Bring background to front during streak increment */
+body.streak-celebrating::before,
+body.streak-celebrating::after {
+  z-index: 99999 !important;
+}
+
+body.streak-celebrating .boulder {
+  z-index: 99999 !important;
+}
+
+body.streak-celebrating .sisyphus {
+  z-index: 99999 !important;
+}
+
+/* Sisyphus Animation */
+@keyframes pushingStruggle {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(2.4deg);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.01) rotate(2.4deg);
+  }
+}
+
+.sisyphus {
+  position: fixed;
+  width: 180px;
+  height: 180px;
+  top: 270px;
+  left: 1130px;
+  background-image: url('/sisyphus.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: pushingStruggle 1.5s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* Anthropic Design System - Design Tokens */
 :root {
   /* Brand Colors */

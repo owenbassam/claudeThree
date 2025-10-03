@@ -50,111 +50,135 @@ export function ProgressMap({
   return (
     <div 
       style={{
-        background: 'var(--color-bg-primary)',
-        border: '1px solid var(--color-border)',
+        background: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(229, 229, 229, 0.5)',
         borderRadius: 'var(--radius-lg)',
-        padding: 'var(--space-6)'
+        padding: 'var(--space-6)',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ 
-          fontSize: 'var(--font-size-lg)',
-          fontWeight: 700,
-          color: 'var(--color-text-primary)',
-          marginBottom: 'var(--space-2)'
-        }}>
-          Learning Path
-        </h2>
-        
-        {/* Overall Progress Bar */}
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-1)' }}>
-            <span style={{ 
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-secondary)'
-            }}>
-              {completedChapters} of {analysis.chapters.length} chapters complete
-            </span>
-            <span style={{ 
-              fontSize: 'var(--font-size-sm)',
-              fontWeight: 600,
-              color: 'var(--color-brand-primary)'
-            }}>
-              {Math.round(overallProgress)}%
-            </span>
-          </div>
-          <div 
-            style={{
-              height: '8px',
-              background: 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-full)',
-              overflow: 'hidden'
-            }}
-          >
-            <div 
-              style={{
-                height: '100%',
-                width: `${overallProgress}%`,
-                background: 'var(--color-brand-primary)',
-                transition: 'width 0.5s ease'
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Chapter Nodes */}
-      <div 
-        className="flex flex-col"
-        style={{ gap: 'var(--space-3)' }}
-      >
-        {analysis.chapters.map((chapter, index) => {
-          const status = getChapterStatus(index);
-          const score = getChapterScore(index);
-
-          return (
-            <ChapterNode
-              key={index}
-              chapter={chapter}
-              index={index}
-              status={status}
-              score={score}
-              isClickable={false}
-              onClick={() => {}}
-            />
-          );
-        })}
-      </div>
-
-      {/* Legend */}
+      {/* Mountain Background */}
       <div 
         style={{
-          marginTop: 'var(--space-6)',
-          paddingTop: 'var(--space-4)',
-          borderTop: '1px solid var(--color-border)',
-          display: 'flex',
-          gap: 'var(--space-4)',
-          flexWrap: 'wrap',
-          fontSize: 'var(--font-size-xs)',
-          color: 'var(--color-text-tertiary)'
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'url(/sisyphus-mountain.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.15,
+          pointerEvents: 'none',
+          zIndex: 0
         }}
-      >
-        <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
-          <CheckCircle className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
-          <span>Completed</span>
+      />
+
+      {/* Content with higher z-index */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <div style={{ marginBottom: 'var(--space-6)' }}>
+          <h2 style={{ 
+            fontSize: 'var(--font-size-lg)',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--space-2)'
+          }}>
+            Learning Progress
+          </h2>
+          
+          {/* Overall Progress */}
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-1)' }}>
+              <span style={{ 
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)'
+              }}>
+                {completedChapters} of {analysis.chapters.length} chapters complete
+              </span>
+              <span style={{ 
+                fontSize: 'var(--font-size-sm)',
+                fontWeight: 600,
+                color: 'var(--color-brand-primary)'
+              }}>
+                {Math.round(overallProgress)}%
+              </span>
+            </div>
+            <div 
+              style={{
+                height: '8px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                borderRadius: 'var(--radius-full)',
+                overflow: 'hidden'
+              }}
+            >
+              <div 
+                style={{
+                  height: '100%',
+                  width: `${overallProgress}%`,
+                  background: 'var(--color-brand-primary)',
+                  transition: 'width 0.5s ease'
+                }}
+              />
+            </div>
+          </div>
         </div>
-        <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
-          <Play className="w-3.5 h-3.5" style={{ color: 'var(--color-brand-primary)' }} />
-          <span>Current</span>
+
+        {/* Chapter Nodes */}
+        <div 
+          className="flex flex-col"
+          style={{ gap: 'var(--space-3)' }}
+        >
+          {analysis.chapters.map((chapter, index) => {
+            const status = getChapterStatus(index);
+            const score = getChapterScore(index);
+
+            return (
+              <ChapterNode
+                key={index}
+                chapter={chapter}
+                index={index}
+                status={status}
+                score={score}
+                isClickable={false}
+                onClick={() => {}}
+              />
+            );
+          })}
         </div>
-        <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
-          <Unlock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-secondary)' }} />
-          <span>Unlocked</span>
-        </div>
-        <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
-          <Lock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
-          <span>Locked</span>
+
+        {/* Legend */}
+        <div 
+          style={{
+            marginTop: 'var(--space-6)',
+            paddingTop: 'var(--space-4)',
+            borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+            display: 'flex',
+            gap: 'var(--space-4)',
+            flexWrap: 'wrap',
+            fontSize: 'var(--font-size-xs)',
+            color: 'var(--color-text-tertiary)'
+          }}
+        >
+          <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+            <CheckCircle className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
+            <span>Completed</span>
+          </div>
+          <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+            <Play className="w-3.5 h-3.5" style={{ color: 'var(--color-brand-primary)' }} />
+            <span>Current</span>
+          </div>
+          <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+            <Unlock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-secondary)' }} />
+            <span>Unlocked</span>
+          </div>
+          <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+            <Lock className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+            <span>Locked</span>
+          </div>
         </div>
       </div>
     </div>

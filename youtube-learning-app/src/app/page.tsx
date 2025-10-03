@@ -4,29 +4,54 @@ import { Sparkles, Brain, Zap, Target, GraduationCap } from 'lucide-react';
 import { VideoInput } from '@/components/VideoInput';
 import { VideoResultSocratic } from '@/components/VideoResultSocratic';
 import { useVideoProcessor } from '@/hooks/useVideoProcessor';
+import { useEffect } from 'react';
 
 export default function Home() {
   const { videoData, isLoading, error, processVideo, processPDF, resetVideo } = useVideoProcessor();
 
+  // Add class to body when video is loaded to stop background animations
+  useEffect(() => {
+    if (videoData) {
+      document.body.classList.add('video-loaded');
+    } else {
+      document.body.classList.remove('video-loaded');
+    }
+  }, [videoData]);
+
   // Show Socratic learning interface if we have processed data
   if (videoData) {
+    // Only prevent scrolling if we're in the analyzing state (loading screen)
+    const isAnalyzing = videoData.processingStatus === 'analyzing';
+    
     return (
-      <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
-        <div style={{ padding: 'var(--space-8) 0' }}>
-          <VideoResultSocratic videoData={videoData} onReset={resetVideo} />
-        </div>
+      <div style={{ 
+        background: 'transparent', 
+        minHeight: '100vh',
+        padding: isAnalyzing ? '0' : 'var(--space-8) var(--space-4)',
+        ...(isAnalyzing && {
+          height: '100vh',
+          overflow: 'hidden',
+          position: 'fixed',
+          width: '100vw',
+          top: 0,
+          left: 0
+        })
+      }}>
+        <VideoResultSocratic videoData={videoData} onReset={resetVideo} />
       </div>
     );
   }
 
   // Show landing page with video input - Anthropic style
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
+    <div className="min-h-screen" style={{ background: 'transparent' }}>
       {/* Hero Section - Large, centered, generous whitespace */}
       <div className="container mx-auto" style={{ padding: 'var(--space-12) var(--space-4) var(--space-8)' }}>
         
         {/* Hero Header - Anthropic style: large, bold, minimal */}
-        <div className="text-center animate-fadeIn" style={{ marginBottom: 'var(--space-12)' }}>
+        <div className="text-center animate-fadeIn" style={{ 
+          marginBottom: 'var(--space-12)'
+        }}>
           <div className="flex items-center justify-center" style={{ marginBottom: 'var(--space-2)' }}>
             <span style={{ fontSize: '64px' }}>🪨</span>
           </div>
@@ -54,11 +79,15 @@ export default function Home() {
               fontSize: 'var(--font-size-lg)',
               lineHeight: 'var(--line-height-loose)',
               color: 'var(--color-text-secondary)',
-              maxWidth: '720px',
+              maxWidth: '740px',
               marginBottom: 'var(--space-8)',
               marginLeft: 'auto',
               marginRight: 'auto',
-              textAlign: 'center'
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(2px)',
+              padding: '0.5em 1em',
+              borderRadius: '8px'
             }}
           >
             An AI tutor that guides through questions, not answers. Like Sisyphus pushing the boulder, 
@@ -89,8 +118,9 @@ export default function Home() {
           <div 
             className="card"
             style={{
-              background: 'var(--color-bg-primary)',
-              border: '1px solid var(--color-border)',
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(229, 229, 229, 0.5)',
               borderRadius: 'var(--radius-lg)',
               padding: 'var(--space-4)',
               transition: 'var(--transition-base)',
@@ -131,8 +161,9 @@ export default function Home() {
           <div 
             className="card"
             style={{
-              background: 'var(--color-bg-primary)',
-              border: '1px solid var(--color-border)',
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(229, 229, 229, 0.5)',
               borderRadius: 'var(--radius-lg)',
               padding: 'var(--space-4)',
               transition: 'var(--transition-base)',
@@ -173,8 +204,9 @@ export default function Home() {
           <div 
             className="card"
             style={{
-              background: 'var(--color-bg-primary)',
-              border: '1px solid var(--color-border)',
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(229, 229, 229, 0.5)',
               borderRadius: 'var(--radius-lg)',
               padding: 'var(--space-4)',
               transition: 'var(--transition-base)',
@@ -224,7 +256,7 @@ export default function Home() {
         >
           <p style={{ 
             fontSize: 'var(--font-size-xs)', 
-            color: 'var(--color-text-tertiary)' 
+            color: 'var(--color-text-tertiary)'
           }}>
             Powered by Claude 4.5 Sonnet
           </p>

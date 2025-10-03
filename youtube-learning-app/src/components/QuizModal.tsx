@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { QuizQuestion } from '@/types';
-import { X, CheckCircle2, XCircle, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, CheckCircle2, XCircle, ChevronRight, ChevronLeft, Download } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 
 interface QuizModalProps {
@@ -87,12 +87,52 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
     return 'text-red-600';
   };
 
+  const handleExport = () => {
+    // Create text content for export
+    let content = '# Quiz Questions\n\n';
+    
+    questions.forEach((question, index) => {
+      content += `## Question ${index + 1}\n\n`;
+      content += `${question.question}\n\n`;
+      
+      question.options.forEach((option, optIndex) => {
+        const isCorrect = optIndex === question.correctAnswer;
+        const marker = isCorrect ? '✓' : ' ';
+        content += `${String.fromCharCode(65 + optIndex)}. [${marker}] ${option}\n`;
+      });
+      
+      content += `\n**Explanation:** ${question.explanation}\n\n`;
+      
+      if (question.timestamp !== undefined) {
+        content += `**Timestamp:** ${formatTime(question.timestamp)}\n\n`;
+      }
+      
+      content += '---\n\n';
+    });
+
+    // If quiz was completed, add score
+    if (quizState.showResults) {
+      content += `\n## Your Results\n\n`;
+      content += `Score: ${quizState.score}/${questions.length} (${Math.round((quizState.score / questions.length) * 100)}%)\n`;
+    }
+
+    // Create and download file
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quiz-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div 
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ 
         background: 'rgba(0, 0, 0, 0.7)',
-        padding: 'var(--space-4)',
         backdropFilter: 'blur(4px)',
         overflowY: 'auto'
       }}
@@ -128,20 +168,40 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
           >
             {quizState.showResults ? 'Quiz Results' : 'Practice Quiz'}
           </h2>
-          <button
-            onClick={onClose}
-            style={{
-              color: 'var(--color-text-tertiary)',
-              transition: 'var(--transition-fast)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 'var(--space-1)'
-            }}
-            className="hover:text-gray-700"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button
+              onClick={handleExport}
+              style={{
+                color: 'var(--color-text-secondary)',
+                transition: 'var(--transition-fast)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 'var(--space-1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)'
+              }}
+              className="hover:text-[var(--color-brand-primary)]"
+              title="Export quiz"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                color: 'var(--color-text-tertiary)',
+                transition: 'var(--transition-fast)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 'var(--space-1)'
+              }}
+              className="hover:text-gray-700"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

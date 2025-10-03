@@ -106,9 +106,11 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
                 padding: 'var(--space-2) var(--space-3)',
                 fontSize: 'var(--font-size-base)',
                 lineHeight: 'var(--line-height-base)',
-                border: `1px solid ${isFocused ? 'var(--color-border-focus)' : 'var(--color-border)'}`,
+                border: `1px solid ${isFocused ? 'var(--color-border-focus)' : 'rgba(229, 229, 229, 0.5)'}`,
                 borderRadius: 'var(--radius-md)',
-                background: 'var(--color-bg-primary)',
+                background: 'rgba(255, 255, 255, 0.75)',
+                WebkitBackdropFilter: 'blur(8px)',
+                backdropFilter: 'blur(8px)',
                 color: 'var(--color-text-primary)',
                 transition: 'var(--transition-base)',
                 boxShadow: isFocused ? '0 0 0 3px rgba(255, 107, 53, 0.1)' : 'none',
@@ -228,7 +230,12 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
             marginTop: 'var(--space-2)',
             fontSize: 'var(--font-size-xs)', 
             color: 'var(--color-text-tertiary)',
-            lineHeight: 'var(--line-height-base)'
+            lineHeight: 'var(--line-height-base)',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(2px)',
+            padding: '0.5em 1em',
+            borderRadius: '8px',
+            display: 'inline-block'
           }}
         >
           {inputMode === 'youtube' 
