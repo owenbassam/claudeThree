@@ -9,6 +9,13 @@ RUN apt-get update && \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Verify Python installation and create symlink if needed
+RUN which python3 && python3 --version || \
+    (which python && ln -s $(which python) /usr/bin/python3)
+
+# Set Python path environment variable
+ENV PYTHON_CMD=/usr/bin/python3
+
 # Create app directory
 WORKDIR /app
 

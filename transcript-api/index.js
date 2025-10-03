@@ -60,7 +60,11 @@ async function extractTranscript(videoUrl) {
   
   return new Promise((resolve, reject) => {
     const pythonScript = path.join(__dirname, 'transcript_fetcher.py');
-    const python = spawn('python3', [pythonScript, videoId]);
+    // Try different Python executable paths
+    const pythonCmd = process.env.PYTHON_CMD || 'python3';
+    console.log(`Using Python command: ${pythonCmd}`);
+    console.log(`Python script path: ${pythonScript}`);
+    const python = spawn(pythonCmd, [pythonScript, videoId]);
 
     let stdout = '';
     let stderr = '';
