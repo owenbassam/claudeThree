@@ -61,8 +61,8 @@ async function extractTranscript(videoUrl) {
       '--write-auto-subs',
       '--sub-lang', 'en',
       '--skip-download',
-      '--cookies-from-browser', 'chrome',
-      '--extractor-args', 'youtube:player_client=android',
+      '--extractor-args', 'youtube:player_client=android,ios',
+      '--user-agent', 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; GB) gzip',
       '--output', path.join(tempDir, '%(title)s.%(ext)s'),
       videoUrl
     ]);
@@ -115,8 +115,8 @@ async function getVideoInfo(videoId) {
     const ytDlp = spawn('yt-dlp', [
       '--dump-json',
       '--no-warnings',
-      '--cookies-from-browser', 'chrome',
-      '--extractor-args', 'youtube:player_client=android',
+      '--extractor-args', 'youtube:player_client=android,ios',
+      '--user-agent', 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; GB) gzip',
       `https://www.youtube.com/watch?v=${videoId}`
     ]);
 
