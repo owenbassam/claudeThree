@@ -1,0 +1,9 @@
+# Ignore Node.js related files (not needed for Python serverless)
+node_modules/
+index.js
+package.json
+package-lock.json
+transcript_fetcher.py
+api.log
+server.log
+*.md.backup

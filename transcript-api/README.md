@@ -1,6 +1,101 @@
-# Transcript API Service
+# YouTube Transcript API - Vercel Deployment
 
-A standalone Express API for extracting YouTube transcripts using yt-dlp.
+A serverless API for extracting YouTube video transcripts using Vercel Python functions.
+
+## Deployment to Vercel
+
+1. **Install Vercel CLI** (if not already installed):
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Deploy from the transcript-api folder**:
+   ```bash
+   cd transcript-api
+   vercel
+   ```
+
+3. **Set Root Directory in Vercel Dashboard**:
+   - Go to your project settings in Vercel
+   - Set "Root Directory" to `transcript-api`
+   - Click "Save"
+
+4. **Redeploy**:
+   ```bash
+   vercel --prod
+   ```
+
+## API Endpoint
+
+Once deployed, your API will be available at:
+```
+https://your-project.vercel.app/api/transcript
+```
+
+## Usage
+
+**POST Request:**
+```bash
+curl -X POST https://your-project.vercel.app/api/transcript \
+  -H "Content-Type: application/json" \
+  -d '{"videoId": "dQw4w9WgXcQ"}'
+```
+
+**Or with URL:**
+```bash
+curl -X POST https://your-project.vercel.app/api/transcript \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "transcript": [
+    {
+      "start": 1.36,
+      "duration": 1.68,
+      "end": 3.04,
+      "text": "[♪♪♪]"
+    }
+  ],
+  "videoInfo": {
+    "id": "dQw4w9WgXcQ",
+    "title": "Video dQw4w9WgXcQ",
+    "thumbnailUrl": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  }
+}
+```
+
+## Local Development
+
+Vercel CLI can run the serverless function locally:
+
+```bash
+cd transcript-api
+vercel dev
+```
+
+Then test at `http://localhost:3000/api/transcript`
+
+## Project Structure
+
+```
+transcript-api/
+├── api/
+│   └── transcript.py      # Serverless function
+├── requirements.txt        # Python dependencies
+├── vercel.json            # Vercel configuration
+└── README.md              # This file
+```
+
+## Tech Stack
+
+- **Vercel**: Serverless hosting
+- **Python 3.9**: Runtime
+- **youtube-transcript-api**: Transcript extraction library
 
 ## Requirements
 
