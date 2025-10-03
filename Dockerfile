@@ -15,14 +15,14 @@ WORKDIR /app
 # Copy everything from context (Railway will set context to repo root)
 COPY . .
 
+# Install Python dependencies from transcript-api folder
+RUN pip3 install --no-cache-dir --break-system-packages -r transcript-api/requirements.txt
+
 # Change to transcript-api directory
 WORKDIR /app/transcript-api
 
 # Install Node dependencies
 RUN npm ci --only=production
-
-# Install Python dependencies
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Expose port
 EXPOSE 3001
