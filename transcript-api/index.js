@@ -78,15 +78,15 @@ async function extractTranscript(videoUrl) {
       '--sleep-requests', '1',
       '--sleep-interval', '5',
       '--max-sleep-interval', '10',
-      // Output format
-      '--output', path.join(tempDir, '%(title)s.%(ext)s'),
     ];
     
     // Only add cookies in development (skip in production/containers)
     if (process.env.NODE_ENV !== 'production' && process.env.USE_COOKIES !== 'false') {
-      args.splice(args.length - 1, 0, '--cookies-from-browser', 'chrome');
+      args.push('--cookies-from-browser', 'chrome');
     }
     
+    // Add output and URL at the end
+    args.push('--output', path.join(tempDir, '%(title)s.%(ext)s'));
     args.push(videoUrl);
     
     const ytDlp = spawn('yt-dlp', args);
