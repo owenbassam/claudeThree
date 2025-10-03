@@ -67,11 +67,15 @@ async function extractTranscript(videoUrl) {
     // Construct path to Python script (in same directory as this file)
     const pythonScript = path.join(__dirname, 'transcript_fetcher.py');
     
-    // Try different Python executable paths
-    const pythonCmd = process.env.PYTHON_CMD || 'python3';
+    // Try different Python executable paths - use absolute path
+    const pythonCmd = process.env.PYTHON_CMD || '/usr/bin/python3';
     console.log(`Using Python command: ${pythonCmd}`);
     console.log(`Python script path: ${pythonScript}`);
-    const python = spawn(pythonCmd, [pythonScript, videoId]);
+    
+    // Spawn with explicit PATH to help find python3
+    const python = spawn(pythonCmd, [pythonScript, videoId], {
+      env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin' }
+    });
 
     let stdout = '';
     let stderr = '';
