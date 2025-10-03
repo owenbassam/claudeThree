@@ -63,21 +63,29 @@ async function extractTranscript(videoUrl) {
       '--write-auto-subs',
       '--sub-lang', 'en',
       '--skip-download',
-      // Use multiple player clients as fallback
-      '--extractor-args', 'youtube:player_client=android,ios,web,tv_embedded',
-      // Simulate Android YouTube app
-      '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 14; en_US)',
-      // Add additional headers to mimic real requests
+      // Try mobile web client first (less detection)
+      '--extractor-args', 'youtube:player_client=mweb,android_creator,ios',
+      // Use mobile web user agent
+      '--user-agent', 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+      // Bypass geo restrictions and cert checks
+      '--geo-bypass',
+      '--no-check-certificate',
+      // Add referer to look more legitimate
+      '--referer', 'https://www.youtube.com/',
+      // Add headers
       '--add-header', 'Accept-Language:en-US,en;q=0.9',
       '--add-header', 'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      '--add-header', 'Accept-Encoding:gzip, deflate, br',
-      '--add-header', 'DNT:1',
-      '--add-header', 'Connection:keep-alive',
+      '--add-header', 'Sec-Fetch-Dest:document',
+      '--add-header', 'Sec-Fetch-Mode:navigate',
+      '--add-header', 'Sec-Fetch-Site:none',
       '--add-header', 'Upgrade-Insecure-Requests:1',
       // Reduce rate limiting
       '--sleep-requests', '1',
-      '--sleep-interval', '5',
-      '--max-sleep-interval', '10',
+      '--sleep-interval', '3',
+      '--max-sleep-interval', '8',
+      // Retry on failures
+      '--retries', '3',
+      '--fragment-retries', '3',
       // Output and URL
       '--output', path.join(tempDir, '%(title)s.%(ext)s'),
       videoUrl
