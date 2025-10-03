@@ -1,8 +1,3 @@
-import { spawn } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import os from 'os';
-
 export interface TranscriptSegment {
   start: number;
   end: number;
@@ -16,12 +11,59 @@ export interface TranscriptResult {
 }
 
 /**
- * Extract YouTube video transcript using yt-dlp
- * @param videoUrl YouTube video URL
+ * Extract YouTube video transcript using Vercel API
+ * @param videoUrl YouTube video URL or video ID
  * @returns Promise<TranscriptResult>
  */
 export async function extractTranscript(videoUrl: string): Promise<TranscriptResult> {
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_TRANSCRIPT_API_URL || 'https://claude-three-59c2.vercel.app/api/transcript';
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: videoUrl
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success && data.transcript) {
+      return {
+        success: true,
+        segments: data.transcript.map((segment: any) => ({
+          start: segment.start,
+          end: segment.end,
+          text: segment.text
+        }))
+      };
+    } else {
+      return {
+        success: false,
+        segments: [],
+        error: data.error || 'Failed to fetch transcript'
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      segments: [],
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+// Legacy yt-dlp implementation (kept for reference, not used)
+async function extractTranscriptLegacy(videoUrl: string): Promise<TranscriptResult> {
+  try {
+    const { spawn } = await import('child_process');
+    const { promises: fs } = await import('fs');
+    const path = await import('path');
+    const os = await import('os');
+    
     // Create a temporary directory for the subtitle file
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'youtube-transcript-'));
     

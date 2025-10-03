@@ -37,12 +37,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call external transcript API
-    const transcriptApiUrl = process.env.TRANSCRIPT_API_URL || 'http://localhost:3001';
+    // Call external transcript API (Vercel with Webshare proxies)
+    const transcriptApiUrl = process.env.NEXT_PUBLIC_TRANSCRIPT_API_URL || 'https://claude-three-59c2.vercel.app/api/transcript';
     console.log('Calling transcript API:', transcriptApiUrl);
     console.log('Video ID:', videoId);
     
-    const response = await fetch(`${transcriptApiUrl}/api/transcript`, {
+    const response = await fetch(transcriptApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
