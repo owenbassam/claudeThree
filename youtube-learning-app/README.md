@@ -1,468 +1,288 @@
-# Socratic AI Tutor (Sisyphus Edition)
+# YouTube Learning App
 
-> An AI tutor that guides through questions, not answers. Like Sisyphus, you'll never reach the top—but every correct answer pushes you higher.
-
-<div align="center">
-
-**🎓 Socratic Method • 🧠 AI-Powered • 🎯 Gated Learning • ✅ Production-Ready**
-
-[Features](#key-features) • [Quick Start](#quick-start) • [How It Works](#how-it-works) • [Architecture](#architecture) • [Demo Guide](#demo-guide)
-
-</div>
-
----
+> Transform YouTube videos into interactive learning experiences with AI-powered Socratic tutoring.
 
 ## Overview
 
-An intelligent learning platform that transforms passive content consumption into active, Socratic dialogue. Whether it's a YouTube video or a PDF document, Claude AI guides you through questions—not lectures—ensuring understanding is proven, not assumed.
+An intelligent learning platform built with Next.js 14 and AWS Bedrock that converts YouTube videos into structured learning experiences. The application uses Claude 3 AI to provide Socratic tutoring, generate study materials, and track progress through an engaging, gamified interface.
 
-### Core Philosophy
+## Features
 
-**"The AI questions you. You'll never reach the top. But every correct answer pushes you higher."**
+### 🎓 AI-Powered Learning
+- **Socratic Tutoring**: Interactive AI tutor that guides learning through questions
+- **Adaptive Difficulty**: Questions adjust based on user performance
+- **Intelligent Hints**: Contextual help when users struggle
+- **Progress Evaluation**: Comprehensive scoring (accuracy, depth, articulation, connections)
 
-Like Sisyphus eternally pushing his boulder, learning is an endless climb. Answer correctly and roll higher up the hill. Fail, and watch the boulder tumble back down. There's no summit—just the eternal pursuit of deeper understanding through Socratic questioning.
+### 📚 Study Tools
+- **Auto-generated Flashcards**: Key concepts with definitions and context
+- **Interactive Quizzes**: Multiple-choice questions with explanations
+- **Chapter Navigation**: Structured content breakdown with timestamps
+- **Export Functionality**: Download flashcards and quizzes in Markdown format
 
-### What Makes This Unique
+### 🎯 Progress Tracking
+- **Visual Progress Map**: See completed, current, unlocked, and locked chapters
+- **Answer Streaks**: Gamified tracking with animated climbing visualization
+- **Chapter Gating**: Must pass comprehension checks to unlock next section
+- **Completion Metrics**: Track overall progress and performance
 
-- **Socratic Method**: AI asks questions, you answer—discover understanding through dialogue
-- **Sisyphean Progress**: Never reach the top, but roll higher with each correct answer
-- **Boulder Mechanics**: Fail, and your progress rolls back down—success must be re-earned
-- **Adaptive Difficulty**: The hill grows steeper as you climb—challenge scales with skill
-- **Multiple Content**: Works with YouTube videos AND PDF documents
-- **No Shortcuts**: Understanding can't be skipped—it must be proven
+### 🎬 Video Experience
+- **Synchronized Transcript**: Real-time transcript display with video
+- **Timestamp Navigation**: Click timestamps to jump to specific moments
+- **Custom Video Player**: Integrated controls with chapter highlighting
+- **YouTube Integration**: Seamless video embedding and playback
 
----
+## Technology Stack
 
-## Key Features
+### Frontend
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Lucide React**: Modern icon system
 
-### 🎓 Socratic AI Tutor
+### AI & Backend
+- **AWS Bedrock**: Claude 3 Sonnet AI model
+- **Transcript API**: External service for reliable transcript extraction
+- **Next.js API Routes**: Server-side processing
 
-**Intelligent Questioning**
-- Pre-watch questions to activate prior knowledge
-- Post-watch comprehension checks
-- Follow-up questions to probe deeper understanding
-- Socratic method: guides discovery without giving answers
+### State Management
+- **React Hooks**: useState, useEffect for local state
+- **Custom Hooks**: useVideoProcessor for complex video logic
+- **localStorage**: Persistent streak tracking
 
-**Adaptive Difficulty**
-- Adjusts question complexity based on performance
-- Increases challenge for high-performers (85+)
-- Simplifies for struggling learners (<70)
-- Personalized learning paths
-
-**Frustration Detection**
-- Monitors consecutive failures (threshold: 2)
-- Offers contextual help: hints, simpler questions, or rewatch
-- Supportive, never condescending
-- Prevents learner discouragement
-
-### 📊 Progress Gating System
-
-**Chapter Locking**
-- Must score ≥70% to unlock next chapter
-- Previous chapters remain accessible for review
-- Visual progress map shows locked/unlocked content
-- Prevents skipping without understanding
-
-**Evaluation Criteria**
-- **Conceptual Accuracy** (40 pts): Correct mental model?
-- **Depth** (30 pts): Surface or deep understanding?
-- **Articulation** (20 pts): Clear explanation?
-- **Connections** (10 pts): Relates to other concepts?
-
-**Checkpoint System**
-- Pass (≥70): Immediate unlock + celebration
-- Borderline (50-69): Follow-up question required
-- Struggling (<50): Must rewatch section with guidance
-
-### 🎬 Interactive Video Experience
-
-**Smart Video Player**
-- Custom controls (play/pause, ±10s skip, volume)
-- Real-time synchronized transcript
-- Clickable timestamps throughout interface
-- Auto-highlights current chapter
-
-**Chapter Navigation**
-- AI-generated chapter breakdown with timestamps
-- Active chapter highlighting based on playback
-- Progress indicators and completion checkmarks
-- One-click navigation to any unlocked section
-
-### 🧠 AI-Powered Content Analysis
-
-**Automatic Generation**
-- **Chapters**: Logical breakdown with timestamps and summaries
-- **Key Concepts**: Definitions with video context and quotes
-- **Quiz Questions**: Multiple-choice with explanations
-- **Flashcards**: Generated from key concepts for review
-
-**Powered by Claude Sonnet 4.5**
-- AWS Bedrock integration
-- Superior educational content analysis
-- Structured output for consistent results
-- Latest model (released Sept 2025)
-
-### � Flexible Content Input
-
-**YouTube Videos**
-- Real-time synchronized transcript
-- Clickable timestamps for navigation
-- Works with any educational video
-
-**PDF Documents**
-- Upload class slides, research papers, study guides
-- Automatic text extraction and analysis
-- Same Socratic tutoring experience
-- Perfect for non-video learning materials
-
-### �💬 Conversation Phases
-
-The tutor guides learners through 7 distinct phases:
-
-1. **WATCHING**: Content viewing with specific focus
-2. **POST_WATCH**: Comprehension check questions
-3. **EVALUATING**: AI scores response (0-100)
-4. **FOLLOW_UP**: Deeper probing for borderline answers
-5. **CHECKPOINT**: Success! Unlock next chapter
-6. **REVIEW**: Failed—review content with guidance
-7. **COMPLETE**: All chapters finished
-
----
-
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-```bash
-# Required
-- Node.js 18+
-- npm or yarn
-- AWS Bedrock access with Claude Sonnet 4.5
-```
+- Node.js 18 or higher
+- npm or yarn package manager
+- AWS account with Bedrock access
+- AWS credentials (Access Key ID and Secret Access Key)
 
 ### Installation
 
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables**
+   
+   Create `.env.local` in the root directory:
+   ```env
+   # AWS Bedrock Configuration
+   AWS_ACCESS_KEY_ID=your_aws_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+   AWS_REGION=us-east-1
+   
+   # Claude AI Model
+   BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
+   
+   # Transcript API
+   NEXT_PUBLIC_TRANSCRIPT_API_URL=https://your-api.vercel.app/api/transcript
+   
+   # App Configuration
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+3. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Usage
+
+1. Paste a YouTube video URL into the input field
+2. Click "Analyze Video" and wait for AI processing
+3. Review the generated chapters and key concepts
+4. Start the Socratic tutoring session
+5. Answer questions to progress through chapters
+6. Use flashcards and quizzes for review
+7. Export study materials as needed
+
+## Project Structure
+
+```
+youtube-learning-app/
+├── src/
+│   ├── app/                      # Next.js App Router
+│   │   ├── api/                  # API routes
+│   │   │   ├── analyze/          # Video analysis endpoint
+│   │   │   ├── generate-quiz/    # Quiz generation
+│   │   │   ├── pdf/              # PDF processing
+│   │   │   ├── transcript/       # Transcript fetching
+│   │   │   └── tutor/            # Socratic tutor endpoints
+│   │   ├── globals.css           # Global styles & animations
+│   │   ├── layout.tsx            # Root layout
+│   │   └── page.tsx              # Main page
+│   │
+│   ├── components/               # React components
+│   │   ├── AnalysisResult.tsx    # Video analysis display
+│   │   ├── ChapterNavigation.tsx # Chapter list with progress
+│   │   ├── Flashcard.tsx         # Flashcard component
+│   │   ├── FlashcardModal.tsx    # Flashcard viewer modal
+│   │   ├── KeyConcepts.tsx       # Concept cards display
+│   │   ├── ProgressMap.tsx       # Visual progress tracker
+│   │   ├── QuizModal.tsx         # Quiz interface
+│   │   ├── SocraticChat.tsx      # Tutor conversation UI
+│   │   ├── VideoInput.tsx        # URL/PDF input form
+│   │   ├── VideoPlayer.tsx       # Embedded video player
+│   │   ├── VideoResult.tsx       # Standard results view
+│   │   └── VideoResultSocratic.tsx # Tutoring mode view
+│   │
+│   ├── hooks/                    # Custom React hooks
+│   │   └── useVideoProcessor.ts  # Video processing logic
+│   │
+│   ├── lib/                      # Utilities and services
+│   │   ├── api.ts                # API client functions
+│   │   ├── bedrock.ts            # AWS Bedrock integration
+│   │   ├── socraticPrompts.ts    # AI prompt templates
+│   │   ├── transcript-extractor.ts # Transcript API client
+│   │   └── youtube.ts            # YouTube utilities
+│   │
+│   └── types/                    # TypeScript type definitions
+│       └── index.ts              # Shared types
+│
+├── public/                       # Static assets
+│   ├── sisyphus-mountain.png     # Progress animation image
+│   └── rock_1faa8.png            # Boulder emoji image
+│
+├── .env.local                    # Environment variables (gitignored)
+├── .env.example                  # Example environment template
+├── next.config.ts                # Next.js configuration
+├── tsconfig.json                 # TypeScript configuration
+├── tailwind.config.ts            # Tailwind CSS configuration
+└── package.json                  # Project dependencies
+```
+
+## Key Components
+
+### VideoInput
+Entry point for users to submit YouTube URLs or upload PDFs.
+
+### AnalysisResult
+Displays AI-generated analysis including chapters, concepts, and quiz questions.
+
+### SocraticChat
+Interactive conversation interface with the AI tutor.
+
+### ProgressMap
+Visual representation of learning progress with chapter states (completed, current, unlocked, locked).
+
+### FlashcardModal & QuizModal
+Study tools with export functionality for offline review.
+
+## API Routes
+
+### `/api/analyze`
+Analyzes video content and generates chapters, concepts, and questions.
+
+### `/api/transcript`
+Fetches and processes YouTube video transcripts.
+
+### `/api/tutor/*`
+- `/start` - Initiates tutoring session
+- `/evaluate` - Scores user responses
+- `/hint` - Provides contextual hints
+
+### `/api/generate-quiz`
+Creates multiple-choice quizzes from video content.
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `AWS_ACCESS_KEY_ID` | AWS access key for Bedrock | Yes |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key for Bedrock | Yes |
+| `AWS_REGION` | AWS region (e.g., us-east-1) | Yes |
+| `BEDROCK_MODEL_ID` | Claude model identifier | Yes |
+| `NEXT_PUBLIC_TRANSCRIPT_API_URL` | Transcript extraction API endpoint | Yes |
+| `NEXT_PUBLIC_APP_URL` | Application base URL | No |
+
+## Development
+
+### Build for Production
+
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd youtube-learning-app
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
+npm run build
 ```
 
-### Configuration
-
-Add your AWS credentials to `.env.local`:
-
-```env
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=us-east-1
-
-# Optional: Transcript API URL (if using external service)
-TRANSCRIPT_API_URL=http://localhost:3001
-
-# Optional: Specify Claude model
-BEDROCK_MODEL_ID=us.anthropic.claude-3-5-sonnet-20241022-v2:0
-```
-
-### Run Development Server
+### Run Production Build
 
 ```bash
-npm run dev
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and paste a YouTube URL or upload a PDF!
+### Linting
 
----
-
-## How It Works
-
-### User Workflow
-
-```
-1. Choose input: YouTube URL OR PDF upload
-   ↓
-2. AI analyzes content (chapters, concepts, key points)
-   ↓
-3. Start conversation with AI tutor
-   ↓
-4. Review assigned content section
-   ↓
-5. Answer comprehension questions
-   ↓
-6. Pass (≥70) → Unlock next chapter
-   Fail → Review and try again
-   ↓
-7. Repeat until complete
+```bash
+npm run lint
 ```
 
-### State Machine
+## Deployment
 
-```
-WATCHING
-  ↓ (User watches section)
-POST_WATCH
-  ↓ (AI asks question)
-EVALUATING
-  ↓ (AI scores 0-100)
-  ├─ ≥70 → CHECKPOINT (unlock next)
-  ├─ 50-69 → FOLLOW_UP (probe deeper)
-  └─ <50 → REVIEW (rewatch section)
-```
+### Vercel (Recommended)
 
-### Frustration Detection
+1. Push your code to GitHub
+2. Import project in [Vercel](https://vercel.com)
+3. Configure environment variables in Vercel dashboard
+4. Deploy automatically on push to main branch
 
-After 2 consecutive failures, the AI offers help:
-- **Hint**: Guidance about the key concept
-- **Simpler Question**: Easier version to build confidence
-- **Rewatch**: Specific guidance on what to focus on
+### Environment Variables in Vercel
 
-### Data Persistence
-
-**Client-Side Storage**
-- Conversation state saved to localStorage
-- Persists across page refreshes
-- Unique per video ID
-- Resume learning anytime
-
-**State Tracked:**
-```typescript
-{
-  unlockedChapters: [0, 1],
-  chapterScores: { "0": 85, "1": 72 },
-  currentChapterIndex: 1,
-  consecutiveFailures: 0,
-  totalFailures: 2,
-  checkpoints: [...],
-  messages: [...]
-}
-```
-
----
-
-## Architecture
-
-### Tech Stack
-
-**Frontend**
-- Next.js 15 (App Router)
-- React 19 with TypeScript
-- Tailwind CSS for styling
-- Lucide React icons
-
-**AI & Backend**
-- AWS Bedrock (Claude Sonnet 4.5)
-- Next.js API routes (serverless)
-- External transcript API (Python/yt-dlp)
-
-### Project Structure
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── transcript/         # Fetch YouTube transcript
-│   │   ├── analyze/            # Claude AI video analysis
-│   │   ├── generate-quiz/      # On-demand quiz generation
-│   │   └── tutor/
-│   │       ├── start/          # Initialize conversation
-│   │       └── evaluate/       # Score responses & manage state
-│   ├── page.tsx               # Main application
-│   └── layout.tsx
-├── components/
-│   ├── VideoResultSocratic.tsx  # Main learning interface
-│   ├── SocraticChat.tsx         # Conversational UI
-│   ├── VideoPlayer.tsx          # Smart player with transcript
-│   ├── ProgressMap.tsx          # Visual progress tracker
-│   ├── KeyConcepts.tsx          # Concept cards
-│   ├── QuizModal.tsx            # Interactive quiz
-│   └── FlashcardModal.tsx       # Flashcard review
-├── hooks/
-│   └── useVideoProcessor.ts    # Video analysis orchestration
-├── lib/
-│   ├── bedrock.ts              # AWS Bedrock client
-│   └── youtube.ts              # YouTube URL utilities
-└── types/
-    └── index.ts                # TypeScript definitions
-```
-
-### API Routes
-
-**`/api/transcript`** (POST)
-- Extracts transcript from YouTube
-- Returns video metadata and timestamped text
-
-**`/api/analyze`** (POST)
-- Sends transcript to Claude AI
-- Returns chapters, concepts, summary
-
-**`/api/generate-quiz`** (POST)
-- Generates quiz questions on-demand
-- Returns 5-10 multiple-choice questions
-
-**`/api/tutor/start`** (POST)
-- Initializes Socratic conversation
-- Returns first AI message and state
-
-**`/api/tutor/evaluate`** (POST)
-- Evaluates user response (0-100 score)
-- Manages state transitions
-- Returns next AI message and updated state
-
----
-
-## Demo Guide
-
-### Recommended Videos
-
-1. **3Blue1Brown** - Mathematical concepts with clear visuals
-2. **Khan Academy** - Structured lessons, good transcripts
-3. **TED-Ed** - Short, engaging, perfect for demos
-4. **MIT OpenCourseWare** - Shows handling of complex content
-
-### Demo Flow (5 minutes)
-
-**1. Setup** (30s)
-- Paste YouTube URL
-- Show analysis in progress
-- "In 20 seconds, we'll have chapters, concepts, and a Socratic tutor"
-
-**2. AI Analysis** (45s)
-- Point out generated chapters
-- Show key concepts with definitions
-- "All auto-generated by Claude AI"
-
-**3. Socratic Tutoring** (2 min)
-- Start conversation
-- Watch first section
-- Answer AI question (intentionally so-so)
-- Get follow-up question
-- Pass checkpoint → unlock next
-- "Notice: can't skip ahead without proving understanding"
-
-**4. Interactive Features** (90s)
-- Click timestamp → video jumps
-- Show progress map (locked chapters)
-- Open quiz modal
-- View flashcards
-- "Everything synchronized and interactive"
-
-**5. Value Prop** (30s)
-- "Transforms passive watching into active learning"
-- "Works with ANY educational YouTube video"
-- "Gated progress ensures real comprehension"
-- "Perfect for students, corporate training, self-learners"
-
----
-
-## Educational Impact
-
-### For Students
-- ✅ Active learning (not passive watching)
-- ✅ Instant comprehension validation
-- ✅ Personalized difficulty adjustment
-- ✅ Study aids (quiz, flashcards) auto-generated
-
-### For Educators
-- ✅ Assign videos with built-in assessment
-- ✅ Track student progress and scores
-- ✅ Scale to hundreds of videos
-- ✅ Focus on teaching, not content creation
-
-### For Corporate Training
-- ✅ Ensure training completion with comprehension
-- ✅ Adaptive learning for diverse skill levels
-- ✅ Automated assessment and tracking
-- ✅ Works with internal video libraries
-
----
-
-## Performance & Scalability
-
-**Processing Speed**
-- Transcript extraction: 3-5 seconds
-- AI analysis: 15-25 seconds
-- Total: ~30 seconds for 10-minute video
-
-**Cost Efficiency**
-- ~$0.10-0.30 per video analysis (Bedrock pricing)
-- Far cheaper than manual content creation
-- Pay-per-use, no infrastructure costs
-
-**Scalability**
-- Serverless architecture (auto-scaling)
-- No database required (client-side state)
-- AWS Bedrock handles AI load
-- Can process thousands of videos
-
----
-
-## Future Enhancements
-
-### Planned Features
-- [ ] User authentication and profiles
-- [ ] Server-side progress tracking (multi-device sync)
-- [ ] Learning analytics dashboard
-- [ ] Export study materials to PDF
-- [ ] Video playlists (course creation)
-- [ ] Automatic speech-to-text for videos without transcripts
-
-### Integration Ideas
-- Corporate LMS systems (Workday, SAP, SuccessFactors)
-- Educational platforms (Canvas, Moodle, Blackboard)
-- Custom video libraries (Vimeo, internal CDN)
-- Multi-language support (Claude supports 100+ languages)
-
----
+Add all required environment variables in the Vercel project settings:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_REGION
+- BEDROCK_MODEL_ID
+- NEXT_PUBLIC_TRANSCRIPT_API_URL
 
 ## Troubleshooting
 
-**Q: Video won't load?**
-- Check YouTube URL format
-- Ensure video has public transcript
-- Try a different educational video
+### Transcript Extraction Issues
+- Ensure transcript API is deployed and accessible
+- Check that API URL is correctly configured in environment variables
+- Verify YouTube video has captions enabled
 
-**Q: AI responses slow?**
-- First response initializes conversation (slower)
-- Subsequent responses are faster
-- Check AWS Bedrock region latency
+### AWS Bedrock Connection
+- Confirm AWS credentials are valid
+- Verify Bedrock is enabled in your AWS region
+- Check that Claude 3 model access is approved
 
-**Q: Can't unlock next chapter?**
-- Must score ≥70 on current chapter
-- Try rewatching and answering again
-- Use "hint" or "simpler" commands if stuck
+### Build Errors
+- Clear `.next` folder and rebuild
+- Delete `node_modules` and reinstall dependencies
+- Ensure all environment variables are set
 
-**Q: Progress lost on refresh?**
-- Check browser localStorage is enabled
-- Each video has unique saved state
-- State persists across sessions
+## Performance Optimization
 
----
+- Uses Next.js server-side rendering for fast initial loads
+- API routes minimize client-side processing
+- Lazy loading for modals and heavy components
+- Optimized images with Next.js Image component
+- CSS animations use GPU acceleration
+
+## Security
+
+- API keys stored in environment variables (never in code)
+- Server-side API calls prevent credential exposure
+- Input validation on all user-submitted data
+- CORS configured for transcript API
 
 ## License
 
-MIT License - See LICENSE file for details
+Private and proprietary.
 
----
+## Author
+
+Owen Bassam
 
 ## Acknowledgments
 
-- **Anthropic** - Claude AI capabilities
-- **AWS Bedrock** - Scalable AI infrastructure
-- **Next.js** - Excellent developer experience
-- **YouTube** - Educational content platform
-
----
-
-<div align="center">
-
-**Built with Claude Sonnet 4.5 • Powered by AWS Bedrock • Designed for Deep Learning**
-
-*Making education more interactive, one question at a time.*
-
-</div>
+- AWS Bedrock for Claude 3 AI capabilities
+- Next.js team for excellent framework
+- Tailwind CSS for utility-first styling
