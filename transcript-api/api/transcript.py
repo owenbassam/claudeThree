@@ -4,7 +4,9 @@ Vercel serverless function for YouTube transcript extraction
 from http.server import BaseHTTPRequestHandler
 import json
 import urllib.parse
+import os
 from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.proxies import WebshareProxyConfig
 
 
 class handler(BaseHTTPRequestHandler):
@@ -72,8 +74,22 @@ class handler(BaseHTTPRequestHandler):
     def get_transcript(self, video_id):
         """Fetch transcript for a YouTube video"""
         try:
+            # Get Webshare credentials from environment variables
+            proxy_username = os.environ.get('WEBSHARE_PROXY_USERNAME')
+            proxy_password = os.environ.get('WEBSHARE_PROXY_PASSWORD')
+            
+            # Initialize API with proxy config if credentials are available
+            if proxy_username and proxy_password:
+                proxy_config = WebshareProxyConfig(
+                    proxy_username=proxy_username,
+                    proxy_password=proxy_password
+                )
+                api = YouTubeTranscriptApi(proxy_config=proxy_config)
+            else:
+                # Fallback to no proxy (will work locally, but may be rate limited on cloud)
+                api = YouTubeTranscriptApi()
+            
             # Fetch transcript using instance method
-            api = YouTubeTranscriptApi()
             transcript = api.fetch(video_id, languages=['en'])
             
             # Format segments (transcript is iterable of dataclass objects)
