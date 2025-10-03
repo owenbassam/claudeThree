@@ -12,26 +12,22 @@ RUN apt-get update && \
 # Create app directory
 WORKDIR /app
 
-# Copy Python requirements first
-COPY transcript-api/requirements.txt ./requirements.txt
-
-# Install Python dependencies
+# Copy Python requirements and install
+COPY requirements.txt ./
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Copy package files for Node
 COPY transcript-api/package*.json ./transcript-api/
 
-# Change to transcript-api directory
-WORKDIR /app/transcript-api
-
 # Install Node dependencies
+WORKDIR /app/transcript-api
 RUN npm ci --only=production
 
 # Copy rest of the application
 WORKDIR /app
 COPY . .
 
-# Set working directory back to transcript-api
+# Set working directory to transcript-api
 WORKDIR /app/transcript-api
 
 # Expose port
