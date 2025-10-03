@@ -59,7 +59,14 @@ async function extractTranscript(videoUrl) {
   const videoId = extractVideoIdFromUrl(videoUrl);
   
   return new Promise((resolve, reject) => {
+    // Debug: log directory info
+    console.log(`__dirname: ${__dirname}`);
+    console.log(`__filename: ${__filename}`);
+    console.log(`process.cwd(): ${process.cwd()}`);
+    
+    // Construct path to Python script (in same directory as this file)
     const pythonScript = path.join(__dirname, 'transcript_fetcher.py');
+    
     // Try different Python executable paths
     const pythonCmd = process.env.PYTHON_CMD || 'python3';
     console.log(`Using Python command: ${pythonCmd}`);
