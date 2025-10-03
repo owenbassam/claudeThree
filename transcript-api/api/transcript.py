@@ -72,17 +72,18 @@ class handler(BaseHTTPRequestHandler):
     def get_transcript(self, video_id):
         """Fetch transcript for a YouTube video"""
         try:
-            # Fetch transcript using class method
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+            # Fetch transcript using instance method
+            api = YouTubeTranscriptApi()
+            transcript = api.fetch(video_id, languages=['en'])
             
-            # Format segments
+            # Format segments (transcript is iterable of dataclass objects)
             formatted_segments = []
-            for segment in transcript_list:
+            for segment in transcript:
                 formatted_segments.append({
-                    'start': segment['start'],
-                    'duration': segment['duration'],
-                    'end': segment['start'] + segment['duration'],
-                    'text': segment['text']
+                    'start': segment.start,
+                    'duration': segment.duration,
+                    'end': segment.start + segment.duration,
+                    'text': segment.text
                 })
             
             return {
