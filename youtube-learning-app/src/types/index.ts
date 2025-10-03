@@ -1,3 +1,5 @@
+export type ContentType = 'video' | 'pdf';
+
 export interface VideoInfo {
   id: string;
   title: string;
@@ -6,6 +8,13 @@ export interface VideoInfo {
   thumbnailUrl: string;
   channelName: string;
   url: string;
+}
+
+export interface PDFInfo {
+  id: string;
+  title: string;
+  pageCount: number;
+  fileName: string;
 }
 
 export interface TranscriptSegment {

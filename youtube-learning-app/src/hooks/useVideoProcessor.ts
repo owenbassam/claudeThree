@@ -92,6 +92,90 @@ export function useVideoProcessor() {
     }
   };
 
+  const processPDF = async (file: File) => {
+    setIsLoading(true);
+    setError(null);
+    setVideoData(null);
+
+    try {
+      // Step 1: Extract text from PDF
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const pdfResponse = await fetch('/api/pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!pdfResponse.ok) {
+        throw new Error('Failed to process PDF');
+      }
+
+      const pdfData = await pdfResponse.json();
+
+      // Create transcript-like structure from PDF text
+      const transcript: TranscriptSegment[] = pdfData.content.segments.map((seg: any, index: number) => ({
+        text: seg.text,
+        start: index * 10, // Fake timestamps for PDF segments
+        duration: 10,
+      }));
+
+      // Create video-like data structure for PDF
+      const initialPDFData: VideoData = {
+        videoInfo: {
+          id: pdfData.pdf.id,
+          title: pdfData.pdf.title,
+          description: `PDF Document • ${pdfData.pdf.pageCount} pages`,
+          duration: pdfData.pdf.pageCount * 60, // Estimate 1 min per page
+          thumbnailUrl: '',
+          channelName: 'PDF Upload',
+          url: pdfData.pdf.fileName,
+        },
+        transcript,
+        analysis: null,
+        processingStatus: 'analyzing',
+      };
+
+      setVideoData(initialPDFData);
+
+      // Step 2: Analyze PDF content with Claude
+      try {
+        const analysisResponse = await apiRequest<{
+          analysis: any;
+          success: boolean;
+          warning?: string;
+        }>('/api/analyze', {
+          method: 'POST',
+          body: JSON.stringify({ 
+            transcript,
+            videoTitle: pdfData.pdf.title 
+          }),
+        });
+
+        // Update with complete analysis
+        setVideoData(prev => prev ? {
+          ...prev,
+          analysis: analysisResponse.analysis,
+          processingStatus: 'complete'
+        } : null);
+
+      } catch (analysisError) {
+        console.error('Analysis failed:', analysisError);
+        setVideoData(prev => prev ? {
+          ...prev,
+          processingStatus: 'error',
+          error: 'Failed to analyze PDF content with AI'
+        } : null);
+      }
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process PDF';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetVideo = () => {
     setVideoData(null);
     setError(null);
@@ -103,6 +187,7 @@ export function useVideoProcessor() {
     isLoading,
     error,
     processVideo,
+    processPDF,
     resetVideo,
   };
 }

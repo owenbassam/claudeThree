@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
 
     // Call external transcript API
     const transcriptApiUrl = process.env.TRANSCRIPT_API_URL || 'http://localhost:3001';
+    console.log('Calling transcript API:', transcriptApiUrl);
+    console.log('Video ID:', videoId);
     
     const response = await fetch(`${transcriptApiUrl}/api/transcript`, {
       method: 'POST',
@@ -47,9 +49,12 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({ videoId }),
     });
+    
+    console.log('Transcript API response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('Transcript API error response:', errorData);
       return NextResponse.json({
         videoInfo: {
           id: videoId,

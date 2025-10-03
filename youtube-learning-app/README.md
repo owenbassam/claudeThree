@@ -1,6 +1,6 @@
-# YouTube Socratic AI Tutor
+# Socratic AI Tutor (Sisyphus Edition)
 
-> Transform any educational YouTube video into an intelligent, interactive learning experience with AI-powered Socratic tutoring
+> An AI tutor that guides through questions, not answers. Like Sisyphus, you'll never reach the top—but every correct answer pushes you higher.
 
 <div align="center">
 
@@ -14,21 +14,22 @@
 
 ## Overview
 
-An intelligent learning platform that transforms passive video watching into active, guided learning. Using Claude AI as a Socratic tutor, students can't progress until they demonstrate understanding—making learning more effective and engaging.
+An intelligent learning platform that transforms passive content consumption into active, Socratic dialogue. Whether it's a YouTube video or a PDF document, Claude AI guides you through questions—not lectures—ensuring understanding is proven, not assumed.
 
 ### Core Philosophy
 
-**"You can't move forward until you prove understanding"**
+**"The AI questions you. You'll never reach the top. But every correct answer pushes you higher."**
 
-Instead of passively watching videos, learners engage in Socratic dialogue with an AI tutor. The AI asks probing questions, evaluates responses, and only unlocks new content when comprehension is demonstrated.
+Like Sisyphus eternally pushing his boulder, learning is an endless climb. Answer correctly and roll higher up the hill. Fail, and watch the boulder tumble back down. There's no summit—just the eternal pursuit of deeper understanding through Socratic questioning.
 
 ### What Makes This Unique
 
-- **Socratic Tutoring**: AI guides through questions, not explanations
-- **Gated Progress**: Can't skip ahead without proving understanding
-- **Adaptive Learning**: Adjusts difficulty based on performance
-- **Frustration Detection**: Offers help after repeated struggles
-- **Zero Setup**: Just paste a YouTube URL and start learning
+- **Socratic Method**: AI asks questions, you answer—discover understanding through dialogue
+- **Sisyphean Progress**: Never reach the top, but roll higher with each correct answer
+- **Boulder Mechanics**: Fail, and your progress rolls back down—success must be re-earned
+- **Adaptive Difficulty**: The hill grows steeper as you climb—challenge scales with skill
+- **Multiple Content**: Works with YouTube videos AND PDF documents
+- **No Shortcuts**: Understanding can't be skipped—it must be proven
 
 ---
 
@@ -101,16 +102,29 @@ Instead of passively watching videos, learners engage in Socratic dialogue with 
 - Structured output for consistent results
 - Latest model (released Sept 2025)
 
-### 💬 Conversation Phases
+### � Flexible Content Input
+
+**YouTube Videos**
+- Real-time synchronized transcript
+- Clickable timestamps for navigation
+- Works with any educational video
+
+**PDF Documents**
+- Upload class slides, research papers, study guides
+- Automatic text extraction and analysis
+- Same Socratic tutoring experience
+- Perfect for non-video learning materials
+
+### �💬 Conversation Phases
 
 The tutor guides learners through 7 distinct phases:
 
-1. **WATCHING**: Video viewing with specific focus
+1. **WATCHING**: Content viewing with specific focus
 2. **POST_WATCH**: Comprehension check questions
 3. **EVALUATING**: AI scores response (0-100)
 4. **FOLLOW_UP**: Deeper probing for borderline answers
 5. **CHECKPOINT**: Success! Unlock next chapter
-6. **REVIEW**: Failed—rewatch with guidance
+6. **REVIEW**: Failed—review content with guidance
 7. **COMPLETE**: All chapters finished
 
 ---
@@ -162,7 +176,7 @@ BEDROCK_MODEL_ID=us.anthropic.claude-3-5-sonnet-20241022-v2:0
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and paste any educational YouTube URL!
+Open [http://localhost:3000](http://localhost:3000) and paste a YouTube URL or upload a PDF!
 
 ---
 
@@ -171,13 +185,13 @@ Open [http://localhost:3000](http://localhost:3000) and paste any educational Yo
 ### User Workflow
 
 ```
-1. Paste YouTube URL
+1. Choose input: YouTube URL OR PDF upload
    ↓
-2. AI analyzes video (chapters, concepts, transcript)
+2. AI analyzes content (chapters, concepts, key points)
    ↓
 3. Start conversation with AI tutor
    ↓
-4. Watch assigned video section
+4. Review assigned content section
    ↓
 5. Answer comprehension questions
    ↓
