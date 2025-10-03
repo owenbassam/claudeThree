@@ -15,14 +15,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install Node dependencies
 RUN npm ci --only=production
 
-# Copy app source
-COPY . .
+# Copy Python requirements first
+COPY requirements.txt ./
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+
+# Copy app source
+COPY . .
 
 # Expose port
 EXPOSE 3001
