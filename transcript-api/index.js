@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import { spawn } from 'child_process';
-import { promises as fs } from 'fs';
 import path from 'path';
-import os from 'os';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,195 +52,67 @@ app.post('/api/transcript', async (req, res) => {
 });
 
 /**
- * Extract transcript using yt-dlp
- * Uses multiple strategies to bypass bot detection
+ * Extract transcript using Python youtube-transcript-api
+ * More reliable than yt-dlp for transcript extraction
  */
 async function extractTranscript(videoUrl) {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'transcript-'));
+  const videoId = extractVideoIdFromUrl(videoUrl);
   
   return new Promise((resolve, reject) => {
-    // Build args array with anti-bot detection measures
-    const args = [
-      '--write-subs',
-      '--write-auto-subs',
-      '--sub-lang', 'en',
-      '--skip-download',
-      // Try mobile web client first (less detection)
-      '--extractor-args', 'youtube:player_client=mweb,android_creator,ios',
-      // Use mobile web user agent
-      '--user-agent', 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
-      // Bypass geo restrictions and cert checks
-      '--geo-bypass',
-      '--no-check-certificate',
-      // Add referer to look more legitimate
-      '--referer', 'https://www.youtube.com/',
-      // Add headers
-      '--add-header', 'Accept-Language:en-US,en;q=0.9',
-      '--add-header', 'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      '--add-header', 'Sec-Fetch-Dest:document',
-      '--add-header', 'Sec-Fetch-Mode:navigate',
-      '--add-header', 'Sec-Fetch-Site:none',
-      '--add-header', 'Upgrade-Insecure-Requests:1',
-      // Reduce rate limiting
-      '--sleep-requests', '1',
-      '--sleep-interval', '3',
-      '--max-sleep-interval', '8',
-      // Retry on failures
-      '--retries', '3',
-      '--fragment-retries', '3',
-      // Output and URL
-      '--output', path.join(tempDir, '%(title)s.%(ext)s'),
-      videoUrl
-    ];
-    
-    const ytDlp = spawn('yt-dlp', args);
-
-    let stderr = '';
-
-    ytDlp.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    ytDlp.on('close', async (code) => {
-      try {
-        if (code !== 0) {
-          throw new Error(`yt-dlp exited with code ${code}: ${stderr}`);
-        }
-
-        // Find and parse the subtitle file
-        const files = await fs.readdir(tempDir);
-        const vttFile = files.find(f => f.endsWith('.vtt'));
-
-        if (!vttFile) {
-          throw new Error('No subtitle file found');
-        }
-
-        const vttPath = path.join(tempDir, vttFile);
-        const vttContent = await fs.readFile(vttPath, 'utf-8');
-        const segments = parseVTT(vttContent);
-
-        // Cleanup
-        await fs.rm(tempDir, { recursive: true, force: true });
-
-        resolve({ success: true, segments });
-      } catch (error) {
-        await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
-        reject(error);
-      }
-    });
-
-    ytDlp.on('error', (error) => {
-      reject(new Error(`Failed to spawn yt-dlp: ${error.message}`));
-    });
-  });
-}
-
-/**
- * Get video metadata using yt-dlp
- */
-async function getVideoInfo(videoId) {
-  return new Promise((resolve, reject) => {
-    const ytDlp = spawn('yt-dlp', [
-      '--dump-json',
-      '--no-warnings',
-      '--extractor-args', 'youtube:player_client=android,ios',
-      '--user-agent', 'com.google.android.youtube/17.36.4 (Linux; U; Android 12; GB) gzip',
-      `https://www.youtube.com/watch?v=${videoId}`
-    ]);
+    const pythonScript = path.join(__dirname, 'transcript_fetcher.py');
+    const python = spawn('python3', [pythonScript, videoId]);
 
     let stdout = '';
     let stderr = '';
 
-    ytDlp.stdout.on('data', (data) => {
+    python.stdout.on('data', (data) => {
       stdout += data.toString();
     });
 
-    ytDlp.stderr.on('data', (data) => {
+    python.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    ytDlp.on('close', (code) => {
+    python.on('close', (code) => {
       if (code !== 0) {
-        return reject(new Error(`yt-dlp exited with code ${code}: ${stderr}`));
+        return reject(new Error(`Python script exited with code ${code}: ${stderr}`));
       }
 
       try {
-        const info = JSON.parse(stdout);
-        resolve({
-          id: videoId,
-          title: info.title,
-          description: info.description,
-          thumbnailUrl: info.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-          channelName: info.uploader || info.channel || 'Unknown',
-          duration: info.duration,
-          url: `https://www.youtube.com/watch?v=${videoId}`
-        });
+        const result = JSON.parse(stdout);
+        
+        if (!result.success) {
+          return reject(new Error(result.error || 'Failed to fetch transcript'));
+        }
+
+        resolve({ success: true, segments: result.segments });
       } catch (error) {
-        reject(new Error('Failed to parse video info'));
+        reject(new Error(`Failed to parse transcript: ${error.message}`));
       }
     });
 
-    ytDlp.on('error', (error) => {
-      reject(new Error(`Failed to spawn yt-dlp: ${error.message}`));
+    python.on('error', (error) => {
+      reject(new Error(`Failed to spawn Python: ${error.message}. Make sure Python 3 and youtube-transcript-api are installed.`));
     });
   });
 }
 
 /**
- * Parse VTT subtitle format
+ * Get video metadata - returns basic info
+ * For full metadata, you would need YouTube Data API v3
  */
-function parseVTT(vttContent) {
-  const segments = [];
-  const lines = vttContent.split('\n');
-  let currentSegment = null;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    // Match timestamp lines (e.g., "00:00:00.000 --> 00:00:05.000")
-    const timestampMatch = line.match(/(\d{2}:\d{2}:\d{2}\.\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2}\.\d{3})/);
-    
-    if (timestampMatch) {
-      if (currentSegment && currentSegment.text) {
-        segments.push(currentSegment);
-      }
-      
-      currentSegment = {
-        start: parseTimestamp(timestampMatch[1]),
-        end: parseTimestamp(timestampMatch[2]),
-        text: ''
-      };
-    } else if (currentSegment && line && !line.includes('WEBVTT') && !line.match(/^\d+$/)) {
-      // Remove VTT formatting tags
-      const cleanText = line.replace(/<[^>]*>/g, '').trim();
-      if (cleanText) {
-        currentSegment.text += (currentSegment.text ? ' ' : '') + cleanText;
-      }
-    }
-  }
-
-  // Add the last segment
-  if (currentSegment && currentSegment.text) {
-    segments.push(currentSegment);
-  }
-
-  // Calculate duration for each segment
-  return segments.map(seg => ({
-    ...seg,
-    duration: seg.end - seg.start
-  }));
-}
-
-/**
- * Parse VTT timestamp to seconds
- */
-function parseTimestamp(timestamp) {
-  const [hours, minutes, seconds] = timestamp.split(':');
-  return (
-    parseInt(hours) * 3600 +
-    parseInt(minutes) * 60 +
-    parseFloat(seconds)
-  );
+async function getVideoInfo(videoId) {
+  // Return basic video info
+  // In production, you could use YouTube Data API v3 for complete metadata
+  return {
+    id: videoId,
+    title: `Video ${videoId}`, // Could be enhanced with API call
+    description: '',
+    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    channelName: 'Unknown',
+    duration: 0,
+    url: `https://www.youtube.com/watch?v=${videoId}`
+  };
 }
 
 /**

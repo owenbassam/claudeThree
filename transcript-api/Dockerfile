@@ -6,12 +6,8 @@ RUN apt-get update && \
     python3 \
     python3-pip \
     python3-setuptools \
-    ffmpeg \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Install yt-dlp
-RUN pip3 install --no-cache-dir --break-system-packages yt-dlp
 
 # Create app directory
 WORKDIR /app
@@ -24,6 +20,9 @@ RUN npm ci --only=production
 
 # Copy app source
 COPY . .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Expose port
 EXPOSE 3001
