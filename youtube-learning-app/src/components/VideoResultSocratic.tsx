@@ -216,17 +216,15 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
           padding: 'var(--space-4)'
         }}
       >
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
           <h2 style={{ 
             fontSize: 'var(--font-size-xl)',
             fontWeight: 700,
             color: 'var(--color-text-primary)',
-            marginBottom: 'var(--space-2)',
             background: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(2px)',
             padding: '0.5em 1em',
-            borderRadius: '8px',
-            display: 'inline-block'
+            borderRadius: '8px'
           }}>
             Analyzing video{dots}
           </h2>
@@ -236,8 +234,7 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
             background: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(2px)',
             padding: '0.5em 1em',
-            borderRadius: '8px',
-            display: 'inline-block'
+            borderRadius: '8px'
           }}>
             Preparing your personalized learning experience
           </p>
