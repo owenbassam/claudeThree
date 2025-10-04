@@ -44,7 +44,98 @@ export default function Home() {
 
   // Show landing page with video input - Anthropic style
   return (
-    <div className="min-h-screen" style={{ background: 'transparent' }}>
+    <div className="min-h-screen" style={{ background: 'transparent', position: 'relative' }}>
+      {/* Extra mountains for larger screens - extending the diagonal pattern */}
+      {/* Using 40s cycle with 4 mountains spaced 10s apart */}
+      <style>{`
+        @keyframes slideDownLeft40s {
+          0% {
+            transform: translate(2116px, -1116px) rotate(2.4deg);
+          }
+          25% {
+            transform: translate(1058px, -558px) rotate(2.4deg);
+          }
+          50% {
+            transform: translate(0, 0) rotate(2.4deg);
+          }
+          75% {
+            transform: translate(-1058px, 558px) rotate(2.4deg);
+          }
+          100% {
+            transform: translate(-2116px, 1116px) rotate(2.4deg);
+          }
+        }
+        body .home-mountain-1 { animation: slideDownLeft40s 40s linear infinite; animation-delay: 0s; }
+        body .home-mountain-2 { animation: slideDownLeft40s 40s linear infinite; animation-delay: -10s; }
+        body .home-mountain-3 { animation: slideDownLeft40s 40s linear infinite; animation-delay: -20s; }
+        body .home-mountain-4 { animation: slideDownLeft40s 40s linear infinite; animation-delay: -30s; }
+      `}</style>
+      
+      <div 
+        className="home-mountain-1"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '1512px',
+          height: '797px',
+          backgroundImage: 'url(/sisyphus-mountain.png)',
+          backgroundSize: '1814px auto',
+          backgroundPosition: 'top left',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -3,
+          pointerEvents: 'none'
+        }}
+      />
+      <div 
+        className="home-mountain-2"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '1512px',
+          height: '797px',
+          backgroundImage: 'url(/sisyphus-mountain.png)',
+          backgroundSize: '1814px auto',
+          backgroundPosition: 'top left',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -3,
+          pointerEvents: 'none'
+        }}
+      />
+      <div 
+        className="home-mountain-3"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '1512px',
+          height: '797px',
+          backgroundImage: 'url(/sisyphus-mountain.png)',
+          backgroundSize: '1814px auto',
+          backgroundPosition: 'top left',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -3,
+          pointerEvents: 'none'
+        }}
+      />
+      <div 
+        className="home-mountain-4"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '1512px',
+          height: '797px',
+          backgroundImage: 'url(/sisyphus-mountain.png)',
+          backgroundSize: '1814px auto',
+          backgroundPosition: 'top left',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -3,
+          pointerEvents: 'none'
+        }}
+      />
+
       {/* Hero Section - Large, centered, generous whitespace */}
       <div className="container mx-auto" style={{ padding: 'var(--space-12) var(--space-4) var(--space-8)' }}>
         

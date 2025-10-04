@@ -221,13 +221,23 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
             fontSize: 'var(--font-size-xl)',
             fontWeight: 700,
             color: 'var(--color-text-primary)',
-            marginBottom: 'var(--space-2)'
+            marginBottom: 'var(--space-2)',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(2px)',
+            padding: '0.5em 1em',
+            borderRadius: '8px',
+            display: 'inline-block'
           }}>
             Analyzing video{dots}
           </h2>
           <p style={{ 
             fontSize: 'var(--font-size-base)',
-            color: 'var(--color-text-secondary)'
+            color: 'var(--color-text-secondary)',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(2px)',
+            padding: '0.5em 1em',
+            borderRadius: '8px',
+            display: 'inline-block'
           }}>
             Preparing your personalized learning experience
           </p>
