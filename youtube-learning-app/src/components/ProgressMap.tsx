@@ -80,50 +80,43 @@ export function ProgressMap({
       {/* Content with higher z-index */}
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
-        <div style={{ marginBottom: 'var(--space-6)' }}>
+        <div style={{ marginBottom: 'var(--space-4)' }}>
           <h2 style={{ 
             fontSize: 'var(--font-size-lg)',
             fontWeight: 700,
             color: 'var(--color-text-primary)',
-            marginBottom: 'var(--space-2)'
+            marginBottom: 'var(--space-1)'
           }}>
             Learning Progress
           </h2>
+          <p
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-secondary)',
+              marginBottom: 'var(--space-3)'
+            }}
+          >
+            {completedChapters} of {analysis.chapters.length} chapters complete
+          </p>
           
-          {/* Overall Progress */}
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-1)' }}>
-              <span style={{ 
-                fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-secondary)'
-              }}>
-                {completedChapters} of {analysis.chapters.length} chapters complete
-              </span>
-              <span style={{ 
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 600,
-                color: 'var(--color-brand-primary)'
-              }}>
-                {Math.round(overallProgress)}%
-              </span>
-            </div>
-            <div 
+          {/* Progress Bar */}
+          <div
+            style={{
+              height: '4px',
+              background: 'var(--color-bg-tertiary)',
+              borderRadius: 'var(--radius-full)',
+              marginBottom: 'var(--space-4)'
+            }}
+          >
+            <div
               style={{
-                height: '8px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: 'var(--radius-full)',
-                overflow: 'hidden'
+                height: '100%',
+                width: `${overallProgress}%`,
+                background: 'var(--color-brand-primary)',
+                transition: 'width 0.5s ease',
+                borderRadius: 'var(--radius-full)'
               }}
-            >
-              <div 
-                style={{
-                  height: '100%',
-                  width: `${overallProgress}%`,
-                  background: 'var(--color-brand-primary)',
-                  transition: 'width 0.5s ease'
-                }}
-              />
-            </div>
+            />
           </div>
         </div>
 

@@ -159,15 +159,28 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             flexShrink: 0
           }}
         >
-          <h2 
-            className="font-bold"
-            style={{ 
-              fontSize: 'var(--font-size-2xl)', 
-              color: 'var(--color-text-primary)' 
-            }}
-          >
-            {quizState.showResults ? 'Quiz Results' : 'Practice Quiz'}
-          </h2>
+          <div>
+            <h2 
+              className="font-bold"
+              style={{ 
+                fontSize: 'var(--font-size-2xl)', 
+                color: 'var(--color-text-primary)' 
+              }}
+            >
+              {quizState.showResults ? 'Quiz Results' : 'Practice Quiz'}
+            </h2>
+            {!quizState.showResults && (
+              <p
+                style={{
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--color-text-secondary)',
+                  marginTop: 'var(--space-1)'
+                }}
+              >
+                Question {quizState.currentQuestionIndex + 1} of {questions.length}
+              </p>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <button
               onClick={handleExport}
@@ -203,6 +216,25 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             </button>
           </div>
         </div>
+
+        {/* Progress Bar */}
+        {!quizState.showResults && (
+          <div
+            style={{
+              height: '4px',
+              background: 'var(--color-bg-tertiary)'
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
+                background: 'var(--color-brand-primary)',
+                transition: 'width 0.3s ease'
+              }}
+            />
+          </div>
+        )}
 
         {/* Content */}
         <div 
@@ -388,60 +420,6 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
           ) : (
             // Quiz View
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-              {/* Progress Bar */}
-              <div>
-                <div 
-                  className="flex items-center justify-between"
-                  style={{
-                    fontSize: 'var(--font-size-xs)',
-                    color: 'var(--color-text-secondary)',
-                    marginBottom: 'var(--space-3)'
-                  }}
-                >
-                  <span style={{ fontWeight: 500 }}>
-                    Question {quizState.currentQuestionIndex + 1} of {questions.length}
-                  </span>
-                  <button
-                    onClick={() => onJumpToTime?.(currentQuestion.timestamp)}
-                    style={{
-                      color: 'var(--color-brand-primary)',
-                      fontFamily: 'monospace',
-                      fontSize: 'var(--font-size-xs)',
-                      background: 'rgba(239, 68, 68, 0.05)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      borderRadius: 'var(--radius-md)',
-                      padding: '4px 8px',
-                      cursor: 'pointer',
-                      transition: 'var(--transition-fast)',
-                      fontWeight: 500
-                    }}
-                    className="hover:bg-red-100"
-                  >
-                    {formatTime(currentQuestion.timestamp)}
-                  </button>
-                </div>
-
-                <div 
-                  style={{
-                    width: '100%',
-                    background: 'var(--color-bg-tertiary)',
-                    borderRadius: 'var(--radius-lg)',
-                    height: '6px',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div 
-                    style={{ 
-                      width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
-                      background: 'var(--color-brand-primary)',
-                      height: '6px',
-                      borderRadius: 'var(--radius-lg)',
-                      transition: 'width 0.3s ease'
-                    }}
-                  />
-                </div>
-              </div>
-
               {/* Question Card */}
               <div
                 style={{
