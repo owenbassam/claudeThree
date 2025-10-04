@@ -75,6 +75,7 @@ body.video-loaded .boulder {
 body.video-loaded::before,
 body.video-loaded::after {
   animation: none !important;
+  transform: translate(0, 0) rotate(2.4deg);
 }
 
 /* Reverse animations when streak is reset */
@@ -147,12 +148,16 @@ body.streak-reset .sisyphus {
 /* Bring background to front during streak increment */
 body.streak-celebrating::before,
 body.streak-celebrating::after {
-  animation: slideDownLeftEased 20s ease-in 1, slideDownLeft 20s linear infinite !important;
-  animation-delay: 0s, 20s !important;
+  animation: slideDownLeft 20s linear infinite !important;
   z-index: 99997 !important;
 }
 
+body.streak-celebrating::after {
+  animation-delay: -10s !important;
+}
+
 body.streak-celebrating .boulder {
+  animation: rollInPlace 3s linear infinite !important;
   z-index: 99998 !important;
 }
 

@@ -10,6 +10,7 @@ interface VideoPlayerProps {
   url: string;
   transcript?: TranscriptSegment[];
   onTimeUpdate?: (currentTime: number) => void;
+  onDurationChange?: (duration: number) => void;
   className?: string;
 }
 
@@ -19,7 +20,7 @@ export interface VideoPlayerRef {
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
-  ({ url, transcript = [], onTimeUpdate, className = '' }, ref) => {
+  ({ url, transcript = [], onTimeUpdate, onDurationChange, className = '' }, ref) => {
     const [playing, setPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -45,8 +46,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
   const handleLoadedMetadata = useCallback((event: React.SyntheticEvent<HTMLVideoElement>) => {
     const videoElement = event.currentTarget;
-    setDuration(videoElement.duration);
-  }, []);
+    const dur = videoElement.duration;
+    setDuration(dur);
+    onDurationChange?.(dur);
+  }, [onDurationChange]);
 
   const seekTo = useCallback((seconds: number) => {
     if (playerRef.current) {

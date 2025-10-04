@@ -89,10 +89,10 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
 
   const handleExport = () => {
     // Create text content for export
-    let content = '# Quiz Questions\n\n';
+    let content = 'QUIZ QUESTIONS\n\n';
     
     questions.forEach((question, index) => {
-      content += `## Question ${index + 1}\n\n`;
+      content += `Question ${index + 1}\n\n`;
       content += `${question.question}\n\n`;
       
       question.options.forEach((option, optIndex) => {
@@ -101,10 +101,10 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
         content += `${String.fromCharCode(65 + optIndex)}. [${marker}] ${option}\n`;
       });
       
-      content += `\n**Explanation:** ${question.explanation}\n\n`;
+      content += `\nExplanation: ${question.explanation}\n\n`;
       
       if (question.timestamp !== undefined) {
-        content += `**Timestamp:** ${formatTime(question.timestamp)}\n\n`;
+        content += `Timestamp: ${formatTime(question.timestamp)}\n\n`;
       }
       
       content += '---\n\n';
@@ -112,16 +112,16 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
 
     // If quiz was completed, add score
     if (quizState.showResults) {
-      content += `\n## Your Results\n\n`;
+      content += `\nYour Results\n\n`;
       content += `Score: ${quizState.score}/${questions.length} (${Math.round((quizState.score / questions.length) * 100)}%)\n`;
     }
 
     // Create and download file
-    const blob = new Blob([content], { type: 'text/markdown' });
+    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `quiz-${Date.now()}.md`;
+    a.download = `quiz-${Date.now()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -142,7 +142,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
           background: 'var(--color-bg-primary)',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          maxWidth: '720px',
+          maxWidth: '700px',
           width: '100%',
           margin: 'var(--space-8) auto',
           maxHeight: 'calc(100vh - 64px)',
@@ -154,7 +154,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
         <div 
           className="flex items-center justify-between"
           style={{
-            padding: 'var(--space-6)',
+            padding: 'var(--space-4)',
             borderBottom: '1px solid var(--color-border)',
             flexShrink: 0
           }}
@@ -163,7 +163,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             <h2 
               className="font-bold"
               style={{ 
-                fontSize: 'var(--font-size-2xl)', 
+                fontSize: 'var(--font-size-lg)', 
                 color: 'var(--color-text-primary)' 
               }}
             >
@@ -172,9 +172,9 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             {!quizState.showResults && (
               <p
                 style={{
-                  fontSize: 'var(--font-size-xs)',
+                  fontSize: '11px',
                   color: 'var(--color-text-secondary)',
-                  marginTop: 'var(--space-1)'
+                  marginTop: '4px'
                 }}
               >
                 Question {quizState.currentQuestionIndex + 1} of {questions.length}
@@ -218,28 +218,26 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
         </div>
 
         {/* Progress Bar */}
-        {!quizState.showResults && (
+        <div
+          style={{
+            height: '4px',
+            background: 'var(--color-bg-tertiary)'
+          }}
+        >
           <div
             style={{
-              height: '4px',
-              background: 'var(--color-bg-tertiary)'
+              height: '100%',
+              width: `${quizState.showResults ? 100 : ((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
+              background: 'var(--color-brand-primary)',
+              transition: 'width 0.3s ease'
             }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${((quizState.currentQuestionIndex + 1) / questions.length) * 100}%`,
-                background: 'var(--color-brand-primary)',
-                transition: 'width 0.3s ease'
-              }}
-            />
-          </div>
-        )}
+          />
+        </div>
 
         {/* Content */}
         <div 
           style={{ 
-            padding: 'var(--space-6)',
+            padding: 'var(--space-4)',
             overflowY: 'auto',
             flex: 1
           }}
@@ -251,7 +249,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 <div 
                   className={getScoreColor(quizState.score, questions.length)}
                   style={{
-                    fontSize: 'var(--font-size-4xl)',
+                    fontSize: 'var(--font-size-2xl)',
                     fontWeight: 700
                   }}
                 >
@@ -260,15 +258,15 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 <div 
                   style={{
                     color: 'var(--color-text-secondary)',
-                    marginTop: 'var(--space-2)',
-                    fontSize: 'var(--font-size-lg)'
+                    marginTop: 'var(--space-1)',
+                    fontSize: 'var(--font-size-sm)'
                   }}
                 >
                   {Math.round((quizState.score / questions.length) * 100)}% Correct
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {questions.map((question, index) => {
                   const userAnswer = quizState.selectedAnswers[index];
                   const isCorrect = userAnswer === question.correctAnswer;
@@ -278,19 +276,19 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                       key={index} 
                       style={{
                         border: '1px solid var(--color-border)',
-                        borderRadius: 'var(--radius-lg)',
-                        padding: 'var(--space-4)'
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--space-3)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                         {isCorrect ? (
                           <CheckCircle2 
-                            className="w-5 h-5 flex-shrink-0" 
+                            className="w-4 h-4 flex-shrink-0" 
                             style={{ color: 'var(--color-success)', marginTop: '2px' }}
                           />
                         ) : (
                           <XCircle 
-                            className="w-5 h-5 flex-shrink-0" 
+                            className="w-4 h-4 flex-shrink-0" 
                             style={{ color: 'var(--color-error)', marginTop: '2px' }}
                           />
                         )}
@@ -299,8 +297,8 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                             style={{
                               fontWeight: 500,
                               color: 'var(--color-text-primary)',
-                              marginBottom: 'var(--space-2)',
-                              fontSize: 'var(--font-size-base)'
+                              marginBottom: 'var(--space-1)',
+                              fontSize: 'var(--font-size-sm)'
                             }}
                           >
                             {question.question}
@@ -363,12 +361,12 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                           
                           <div 
                             style={{
-                              marginTop: 'var(--space-3)',
-                              fontSize: 'var(--font-size-xs)',
+                              marginTop: 'var(--space-2)',
+                              fontSize: '11px',
                               color: 'var(--color-text-secondary)',
                               background: 'var(--color-bg-secondary)',
                               padding: 'var(--space-2)',
-                              borderRadius: 'var(--radius-md)'
+                              borderRadius: 'var(--radius-sm)'
                             }}
                           >
                             <strong>Explanation:</strong> {question.explanation}
@@ -380,11 +378,11 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 })}
               </div>
 
-              <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center' }}>
                 <button
                   onClick={resetQuiz}
                   style={{
-                    padding: 'var(--space-2) var(--space-4)',
+                    padding: 'var(--space-2) var(--space-3)',
                     background: 'var(--color-brand-primary)',
                     color: 'white',
                     borderRadius: 'var(--radius-md)',
@@ -392,7 +390,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                     cursor: 'pointer',
                     fontWeight: 600,
                     transition: 'var(--transition-base)',
-                    fontSize: 'var(--font-size-base)'
+                    fontSize: 'var(--font-size-sm)'
                   }}
                   className="hover:opacity-90"
                 >
@@ -401,7 +399,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 <button
                   onClick={onClose}
                   style={{
-                    padding: 'var(--space-2) var(--space-4)',
+                    padding: 'var(--space-2) var(--space-3)',
                     background: 'var(--color-bg-secondary)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-border)',
@@ -409,7 +407,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                     cursor: 'pointer',
                     fontWeight: 600,
                     transition: 'var(--transition-base)',
-                    fontSize: 'var(--font-size-base)'
+                    fontSize: 'var(--font-size-sm)'
                   }}
                   className="hover:bg-gray-200"
                 >
@@ -419,54 +417,45 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
             </div>
           ) : (
             // Quiz View
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-              {/* Question Card */}
-              <div
-                style={{
-                  background: 'var(--color-bg-secondary)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 'var(--space-6)'
-                }}
-              >
-                {/* Difficulty Badge */}
-                <div style={{ marginBottom: 'var(--space-4)' }}>
-                  <span 
-                    style={{
-                      display: 'inline-block',
-                      padding: '6px 14px',
-                      borderRadius: 'var(--radius-lg)',
-                      fontSize: 'var(--font-size-xs)',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      background: currentQuestion.difficulty === 'easy' ? 'rgba(34, 197, 94, 0.1)' :
-                                  currentQuestion.difficulty === 'medium' ? 'rgba(245, 158, 11, 0.1)' :
-                                  'rgba(239, 68, 68, 0.1)',
-                      color: currentQuestion.difficulty === 'easy' ? 'var(--color-success)' :
-                             currentQuestion.difficulty === 'medium' ? 'var(--color-warning)' :
-                             'var(--color-error)'
-                    }}
-                  >
-                    {currentQuestion.difficulty}
-                  </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              {/* Difficulty Badge */}
+              <div style={{ marginBottom: 'var(--space-1)' }}>
+                <span 
+                  style={{
+                    display: 'inline-block',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    background: currentQuestion.difficulty === 'easy' ? 'rgba(34, 197, 94, 0.1)' :
+                                currentQuestion.difficulty === 'medium' ? 'rgba(245, 158, 11, 0.1)' :
+                                'rgba(239, 68, 68, 0.1)',
+                    color: currentQuestion.difficulty === 'easy' ? 'var(--color-success)' :
+                           currentQuestion.difficulty === 'medium' ? 'var(--color-warning)' :
+                           'var(--color-error)'
+                  }}
+                >
+                  {currentQuestion.difficulty}
+                </span>
                 </div>
 
                 {/* Question Text */}
                 <h3 
                   style={{
-                    fontSize: 'var(--font-size-2xl)',
+                    fontSize: 'var(--font-size-base)',
                     fontWeight: 600,
                     color: 'var(--color-text-primary)',
                     lineHeight: 1.4,
-                    marginBottom: 'var(--space-6)'
+                    marginBottom: 'var(--space-3)'
                   }}
                 >
                   {currentQuestion.question}
                 </h3>
 
                 {/* Answer Options */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                   {currentQuestion.options.map((option, optionIndex) => {
                     const isSelected = quizState.selectedAnswers[quizState.currentQuestionIndex] === optionIndex;
                     const optionLetter = String.fromCharCode(65 + optionIndex);
@@ -479,16 +468,16 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                           width: '100%',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 'var(--space-3)',
-                          padding: 'var(--space-4)',
+                          gap: 'var(--space-2)',
+                          padding: 'var(--space-3)',
                           textAlign: 'left',
-                          borderRadius: 'var(--radius-lg)',
+                          borderRadius: 'var(--radius-md)',
                           border: `2px solid ${isSelected ? 'var(--color-brand-primary)' : 'var(--color-border)'}`,
                           background: isSelected ? 'rgba(239, 68, 68, 0.05)' : 'white',
                           color: 'var(--color-text-primary)',
                           transition: 'var(--transition-base)',
                           cursor: 'pointer',
-                          fontSize: 'var(--font-size-base)'
+                          fontSize: 'var(--font-size-sm)'
                         }}
                         className="hover:border-red-400 hover:shadow-sm"
                       >
@@ -497,11 +486,11 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: 'var(--radius-md)',
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: 'var(--radius-sm)',
                             fontWeight: 700,
-                            fontSize: 'var(--font-size-base)',
+                            fontSize: 'var(--font-size-sm)',
                             flexShrink: 0,
                             background: isSelected ? 'var(--color-brand-primary)' : 'var(--color-bg-tertiary)',
                             color: isSelected ? 'white' : 'var(--color-text-secondary)',
@@ -517,7 +506,6 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                     );
                   })}
                 </div>
-              </div>
             </div>
           )}
         </div>
@@ -527,7 +515,7 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
           <div
             style={{
               flexShrink: 0,
-              padding: 'var(--space-6)',
+              padding: 'var(--space-4)',
               borderTop: '1px solid var(--color-border)',
               background: 'var(--color-bg-primary)'
             }}
@@ -538,9 +526,9 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 disabled={quizState.currentQuestionIndex === 0}
                 className="flex items-center"
                 style={{
-                  gap: 'var(--space-2)',
+                  gap: 'var(--space-1)',
                   padding: 'var(--space-2) var(--space-3)',
-                  fontSize: 'var(--font-size-base)',
+                  fontSize: 'var(--font-size-sm)',
                   color: 'var(--color-text-secondary)',
                   background: 'var(--color-bg-secondary)',
                   border: '1px solid var(--color-border)',
@@ -559,9 +547,9 @@ export function QuizModal({ questions, isOpen, onClose, onJumpToTime }: QuizModa
                 disabled={!hasAnsweredCurrent}
                 className="flex items-center"
                 style={{
-                  gap: 'var(--space-2)',
-                  padding: 'var(--space-2) var(--space-4)',
-                  fontSize: 'var(--font-size-base)',
+                  gap: 'var(--space-1)',
+                  padding: 'var(--space-2) var(--space-3)',
+                  fontSize: 'var(--font-size-sm)',
                   fontWeight: 600,
                   color: 'white',
                   background: !hasAnsweredCurrent ? 'var(--color-border)' : 'var(--color-brand-primary)',

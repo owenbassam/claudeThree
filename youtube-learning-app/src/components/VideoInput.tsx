@@ -199,10 +199,7 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
               : 'hover:brightness-90'}
           >
             {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Analyzing{dots}</span>
-              </>
+              <span>Analyzing{dots}</span>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />

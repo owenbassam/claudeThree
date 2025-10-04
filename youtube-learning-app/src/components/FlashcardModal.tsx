@@ -40,23 +40,23 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
 
   const handleExport = () => {
     // Create text content for export
-    let content = '# Flashcards\n\n';
+    let content = 'FLASHCARDS\n\n';
     flashcards.forEach((card, index) => {
-      content += `## Card ${index + 1}\n\n`;
-      content += `**Front:** ${card.front}\n\n`;
-      content += `**Back:** ${card.back}\n\n`;
+      content += `Card ${index + 1}\n\n`;
+      content += `Front: ${card.front}\n\n`;
+      content += `Back: ${card.back}\n\n`;
       if (card.timestamp !== undefined) {
-        content += `**Timestamp:** ${formatTime(card.timestamp)}\n\n`;
+        content += `Timestamp: ${formatTime(card.timestamp)}\n\n`;
       }
       content += '---\n\n';
     });
 
     // Create and download file
-    const blob = new Blob([content], { type: 'text/markdown' });
+    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flashcards-${Date.now()}.md`;
+    a.download = `flashcards-${Date.now()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -90,7 +90,7 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
         <div
           className="flex items-center justify-between"
           style={{
-            padding: 'var(--space-6)',
+            padding: 'var(--space-4)',
             borderBottom: '1px solid var(--color-border)',
             flexShrink: 0
           }}
@@ -99,7 +99,7 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
             <h2
               className="font-bold"
               style={{
-                fontSize: 'var(--font-size-2xl)',
+                fontSize: 'var(--font-size-lg)',
                 color: 'var(--color-text-primary)'
               }}
             >
@@ -107,9 +107,9 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
             </h2>
             <p
               style={{
-                fontSize: 'var(--font-size-xs)',
+                fontSize: '11px',
                 color: 'var(--color-text-secondary)',
-                marginTop: 'var(--space-1)'
+                marginTop: '4px'
               }}
             >
               Card {currentIndex + 1} of {flashcards.length}
@@ -171,7 +171,7 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
         {/* Content - Scrollable */}
         <div 
           style={{ 
-            padding: 'var(--space-6)',
+            padding: 'var(--space-4)',
             flex: 1,
             overflowY: 'auto',
             display: 'flex',
@@ -179,7 +179,7 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
           }}
         >
           {/* Flashcard */}
-          <div style={{ marginBottom: 'var(--space-6)' }}>
+          <div style={{ marginBottom: 'var(--space-4)' }}>
             <Flashcard flashcard={currentCard} resetFlip={resetFlip} />
           </div>
 
@@ -187,16 +187,16 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
           <div
             className="flex items-center justify-between"
             style={{
-              marginBottom: 'var(--space-4)',
-              padding: 'var(--space-3)',
+              marginBottom: 'var(--space-3)',
+              padding: 'var(--space-2)',
               background: 'var(--color-bg-secondary)',
-              borderRadius: 'var(--radius-md)'
+              borderRadius: 'var(--radius-sm)'
             }}
           >
             <button
               onClick={() => onJumpToTime?.(currentCard.timestamp)}
               style={{
-                fontSize: 'var(--font-size-xs)',
+                fontSize: '11px',
                 color: 'var(--color-brand-primary)',
                 fontFamily: 'monospace',
                 background: 'transparent',
@@ -216,7 +216,7 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
         {/* Footer - Navigation (Sticky) */}
         <div 
           style={{
-            padding: 'var(--space-6)',
+            padding: 'var(--space-4)',
             borderTop: '1px solid var(--color-border)',
             background: 'var(--color-bg-primary)',
             flexShrink: 0
@@ -228,9 +228,9 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
               disabled={currentIndex === 0}
               className="flex items-center"
               style={{
-                gap: 'var(--space-2)',
+                gap: 'var(--space-1)',
                 padding: 'var(--space-2) var(--space-3)',
-                fontSize: 'var(--font-size-base)',
+                fontSize: 'var(--font-size-sm)',
                 color: currentIndex === 0 ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
                 background: 'var(--color-bg-secondary)',
                 border: '1px solid var(--color-border)',
@@ -249,9 +249,9 @@ export function FlashcardModal({ flashcards, isOpen, onClose, onJumpToTime }: Fl
               disabled={currentIndex === flashcards.length - 1}
               className="flex items-center"
               style={{
-                gap: 'var(--space-2)',
-                padding: 'var(--space-2) var(--space-4)',
-                fontSize: 'var(--font-size-base)',
+                gap: 'var(--space-1)',
+                padding: 'var(--space-2) var(--space-3)',
+                fontSize: 'var(--font-size-sm)',
                 fontWeight: 600,
                 color: 'white',
                 background: currentIndex === flashcards.length - 1 

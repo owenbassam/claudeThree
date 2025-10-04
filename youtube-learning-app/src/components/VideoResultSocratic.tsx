@@ -35,6 +35,8 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
   const [quizQuestions, setQuizQuestions] = useState(analysis?.quizQuestions || []);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [dots, setDots] = useState('.');
+  const [quizDots, setQuizDots] = useState('.');
+  const [videoMetadata, setVideoMetadata] = useState(videoInfo);
   const videoPlayerRef = useRef<any>(null);
   
   const hasTranscript = transcript && transcript.length > 0;
@@ -54,6 +56,51 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
 
     return () => clearInterval(interval);
   }, [isAnalyzing]);
+
+  // Animate dots during quiz generation
+  useEffect(() => {
+    if (!isLoadingQuiz) return;
+    
+    const interval = setInterval(() => {
+      setQuizDots(prev => {
+        if (prev === '.') return '..';
+        if (prev === '..') return '...';
+        return '.';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isLoadingQuiz]);
+
+  // Fetch video metadata from YouTube oEmbed API if title is placeholder
+  useEffect(() => {
+    const fetchVideoMetadata = async () => {
+      // Check if title looks like a placeholder (e.g., "Video k7RM-ot2NWY")
+      if (videoInfo.title.startsWith('Video ') && videoInfo.title.includes(videoInfo.id)) {
+        try {
+          const response = await fetch(
+            `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoInfo.id}&format=json`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            setVideoMetadata({
+              ...videoInfo,
+              title: data.title || videoInfo.title,
+              channelName: data.author_name || videoInfo.channelName,
+              thumbnailUrl: data.thumbnail_url || videoInfo.thumbnailUrl
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching video metadata:', error);
+          // Keep original videoInfo if fetch fails
+        }
+      }
+    };
+
+    fetchVideoMetadata();
+  }, [videoInfo]);
+  
   const isComplete = processingStatus === 'complete' && analysis;
 
   // Initialize conversation when analysis is complete
@@ -100,6 +147,14 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
 
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
+  };
+
+  const handleDurationChange = (duration: number) => {
+    // Update videoMetadata with the actual duration from the player
+    setVideoMetadata(prev => ({
+      ...prev,
+      duration
+    }));
   };
 
   const handleConversationUpdate = (newState: ConversationState) => {
@@ -287,7 +342,7 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
             color: 'var(--color-text-primary)',
             flex: 1
           }}>
-            {videoInfo.title}
+            {videoMetadata.title}
           </h1>
           
           {/* Quiz and Flashcard buttons */}
@@ -301,22 +356,18 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
                 gap: 'var(--space-1)',
                 padding: 'var(--space-2) var(--space-3)',
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-secondary)',
+                color: isLoadingQuiz ? 'var(--color-text-secondary)' : 'var(--color-brand-primary)',
                 background: 'transparent',
-                border: '1px solid var(--color-border)',
+                border: isLoadingQuiz ? '1px solid var(--color-border)' : '1px solid var(--color-brand-primary)',
                 borderRadius: 'var(--radius-md)',
                 cursor: isLoadingQuiz ? 'wait' : 'pointer',
                 transition: 'var(--transition-base)',
                 opacity: isLoadingQuiz ? 0.6 : 1
               }}
-              className="hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]"
+              className="hover:opacity-80"
             >
-              {isLoadingQuiz ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <GraduationCap className="w-4 h-4" />
-              )}
-              {isLoadingQuiz ? 'Generating...' : 'Quiz'}
+              {!isLoadingQuiz && <GraduationCap className="w-4 h-4" />}
+              {isLoadingQuiz ? `Generating${quizDots}` : 'Quiz'}
             </button>
 
             <button
@@ -345,7 +396,7 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
         <div className="flex items-center flex-wrap" style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
           <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
             <Clock className="w-3.5 h-3.5" />
-            <span>{formatTime(videoInfo.duration)}</span>
+            <span>{formatTime(videoMetadata.duration)}</span>
           </div>
           {hasTranscript && (
             <>
@@ -381,6 +432,7 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
               url={videoInfo.url}
               transcript={hasTranscript ? transcript : undefined}
               onTimeUpdate={handleTimeUpdate}
+              onDurationChange={handleDurationChange}
               className="w-full"
             />
             

@@ -48,82 +48,11 @@ export function ProgressMap({
   const overallProgress = (completedChapters / analysis.chapters.length) * 100;
 
   return (
-    <div 
-      style={{
-        background: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(229, 229, 229, 0.5)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--space-6)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
-      {/* Mountain Background */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: 'url(/sisyphus-mountain.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.15,
-          pointerEvents: 'none',
-          zIndex: 0
-        }}
-      />
-
-      {/* Content with higher z-index */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <h2 style={{ 
-            fontSize: 'var(--font-size-lg)',
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            marginBottom: 'var(--space-1)'
-          }}>
-            Learning Progress
-          </h2>
-          <p
-            style={{
-              fontSize: 'var(--font-size-xs)',
-              color: 'var(--color-text-secondary)',
-              marginBottom: 'var(--space-3)'
-            }}
-          >
-            {completedChapters} of {analysis.chapters.length} chapters complete
-          </p>
-          
-          {/* Progress Bar */}
-          <div
-            style={{
-              height: '4px',
-              background: 'var(--color-bg-tertiary)',
-              borderRadius: 'var(--radius-full)',
-              marginBottom: 'var(--space-4)'
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${overallProgress}%`,
-                background: 'var(--color-brand-primary)',
-                transition: 'width 0.5s ease',
-                borderRadius: 'var(--radius-full)'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Chapter Nodes */}
+    <div>
+      {/* Chapter Nodes */}
         <div 
           className="flex flex-col"
-          style={{ gap: 'var(--space-3)' }}
+          style={{ gap: 'var(--space-2)' }}
         >
           {analysis.chapters.map((chapter, index) => {
             const status = getChapterStatus(index);
@@ -146,13 +75,13 @@ export function ProgressMap({
         {/* Legend */}
         <div 
           style={{
-            marginTop: 'var(--space-6)',
-            paddingTop: 'var(--space-4)',
+            marginTop: 'var(--space-4)',
+            paddingTop: 'var(--space-3)',
             borderTop: '1px solid rgba(0, 0, 0, 0.1)',
             display: 'flex',
-            gap: 'var(--space-4)',
+            gap: 'var(--space-3)',
             flexWrap: 'wrap',
-            fontSize: 'var(--font-size-xs)',
+            fontSize: '11px',
             color: 'var(--color-text-tertiary)'
           }}
         >
@@ -174,7 +103,6 @@ export function ProgressMap({
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
@@ -235,11 +163,11 @@ function ChapterNode({
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 'var(--space-3)',
-        padding: 'var(--space-4)',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-3)',
         background: status === 'current' ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-bg-secondary)',
         border: status === 'current' ? '2px solid var(--color-brand-primary)' : '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 'var(--radius-md)',
         cursor: isClickable ? 'pointer' : 'not-allowed',
         opacity: status === 'locked' ? 0.5 : 1,
         transition: 'var(--transition-base)',
@@ -260,9 +188,9 @@ function ChapterNode({
 
       {/* Chapter Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: '2px' }}>
+        <div className="flex items-center" style={{ gap: 'var(--space-1)', marginBottom: '2px' }}>
           <span style={{ 
-            fontSize: 'var(--font-size-xs)',
+            fontSize: '11px',
             color: 'var(--color-text-tertiary)',
             fontWeight: 600
           }}>
@@ -271,7 +199,7 @@ function ChapterNode({
           {score !== null && (
             <span 
               style={{ 
-                fontSize: 'var(--font-size-xs)',
+                fontSize: '10px',
                 fontWeight: 600,
                 color: getScoreColor(score),
                 padding: '2px 6px',
@@ -285,10 +213,10 @@ function ChapterNode({
         </div>
         <h3 
           style={{ 
-            fontSize: 'var(--font-size-base)',
+            fontSize: 'var(--font-size-sm)',
             fontWeight: 600,
             color: 'var(--color-text-primary)',
-            marginBottom: '4px',
+            marginBottom: '2px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap'
@@ -298,7 +226,7 @@ function ChapterNode({
         </h3>
         <p 
           style={{ 
-            fontSize: 'var(--font-size-xs)',
+            fontSize: '11px',
             color: 'var(--color-text-tertiary)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

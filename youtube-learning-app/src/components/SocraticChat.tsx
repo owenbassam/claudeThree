@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Lightbulb, CheckCircle, Lock, ArrowRight, Map } from 'lucide-react';
+import { Send, Loader2, Lightbulb, CheckCircle, Lock, ArrowRight, Map, X } from 'lucide-react';
 import { ConversationState, Message, LearningAnalysis, EvaluationResult, HintLevel } from '@/types';
 import { ProgressMap } from './ProgressMap';
 import { incrementStreak, resetStreak } from './StreakCounter';
@@ -382,18 +382,14 @@ export function SocraticChat({
       </div>
     </div>
 
-      {/* Progress Map Overlay */}
+      {/* Progress Map Modal */}
       {showProgress && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50,
-            padding: 'var(--space-4)'
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ 
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+            overflowY: 'auto'
           }}
           onClick={() => setShowProgress(false)}
         >
@@ -402,43 +398,91 @@ export function SocraticChat({
             style={{
               background: 'var(--color-bg-primary)',
               borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-xl)',
               maxWidth: '800px',
-              maxHeight: '80vh',
-              overflow: 'auto',
               width: '100%',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+              margin: 'var(--space-8) auto',
+              maxHeight: 'calc(100vh - 64px)',
+              display: 'flex',
+              flexDirection: 'column'
             }}
           >
+            {/* Header */}
             <div
+              className="flex items-center justify-between"
               style={{
-                padding: 'var(--space-6)',
+                padding: 'var(--space-4)',
                 borderBottom: '1px solid var(--color-border)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                flexShrink: 0
               }}
             >
-              <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>
-                Learning Progress
-              </h2>
+              <div>
+                <h2
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--font-size-lg)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  Learning Progress
+                </h2>
+                <p
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--color-text-secondary)',
+                    marginTop: '4px'
+                  }}
+                >
+                  {Object.keys(conversationState.chapterScores).length} of {analysis.chapters.length} chapters complete
+                </p>
+              </div>
               <button
                 onClick={() => setShowProgress(false)}
                 style={{
-                  fontSize: 'var(--font-size-xl)',
                   color: 'var(--color-text-tertiary)',
-                  background: 'none',
+                  transition: 'var(--transition-fast)',
+                  background: 'transparent',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  padding: 'var(--space-1)'
                 }}
+                className="hover:text-gray-700"
               >
-                ×
+                <X className="w-6 h-6" />
               </button>
             </div>
-            <ProgressMap
-              conversationState={conversationState}
-              analysis={analysis}
-              onChapterClick={() => {}} // Disabled
-            />
+
+            {/* Progress Bar */}
+            <div
+              style={{
+                height: '4px',
+                background: 'var(--color-bg-tertiary)'
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${(Object.keys(conversationState.chapterScores).length / analysis.chapters.length) * 100}%`,
+                  background: 'var(--color-brand-primary)',
+                  transition: 'width 0.3s ease'
+                }}
+              />
+            </div>
+
+            {/* Content - Scrollable */}
+            <div 
+              style={{ 
+                padding: 'var(--space-4)',
+                flex: 1,
+                overflowY: 'auto'
+              }}
+            >
+              <ProgressMap
+                conversationState={conversationState}
+                analysis={analysis}
+                onChapterClick={() => {}} // Disabled
+              />
+            </div>
           </div>
         </div>
       )}
