@@ -39,8 +39,6 @@ export async function POST(request: NextRequest) {
 
     // Call external transcript API (Vercel with Webshare proxies)
     const transcriptApiUrl = process.env.NEXT_PUBLIC_TRANSCRIPT_API_URL || 'https://claude-three-59c2.vercel.app/api/transcript';
-    console.log('Calling transcript API:', transcriptApiUrl);
-    console.log('Video ID:', videoId);
     
     const response = await fetch(transcriptApiUrl, {
       method: 'POST',
@@ -49,8 +47,6 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({ videoId }),
     });
-    
-    console.log('Transcript API response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

@@ -50,58 +50,6 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
 
   return (
     <div className="animate-fadeIn">
-      {/* Mode Toggle - Temporarily Hidden */}
-      {/* <div 
-        className="flex gap-2 mb-4"
-        style={{
-          borderBottom: '1px solid var(--color-border)',
-          paddingBottom: 'var(--space-2)'
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setInputMode('youtube')}
-          style={{
-            padding: 'var(--space-2) var(--space-3)',
-            fontSize: 'var(--font-size-sm)',
-            fontWeight: 600,
-            background: inputMode === 'youtube' ? 'var(--color-brand-primary)' : 'transparent',
-            color: inputMode === 'youtube' ? 'white' : 'var(--color-text-secondary)',
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-1)',
-            transition: 'var(--transition-base)'
-          }}
-        >
-          <Video className="w-4 h-4" />
-          YouTube Video
-        </button>
-        <button
-          type="button"
-          onClick={() => setInputMode('pdf')}
-          style={{
-            padding: 'var(--space-2) var(--space-3)',
-            fontSize: 'var(--font-size-sm)',
-            fontWeight: 600,
-            background: inputMode === 'pdf' ? 'var(--color-brand-primary)' : 'transparent',
-            color: inputMode === 'pdf' ? 'white' : 'var(--color-text-secondary)',
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-1)',
-            transition: 'var(--transition-base)'
-          }}
-        >
-          <FileText className="w-4 h-4" />
-          PDF Upload
-        </button>
-      </div> */}
-
       <form onSubmit={handleSubmit}>
         <div 
           className="flex flex-col md:flex-row items-stretch"
