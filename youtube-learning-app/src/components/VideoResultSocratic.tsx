@@ -9,7 +9,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { VideoData, ConversationState, VideoDataWithConversation } from '@/types';
-import { Clock, FileText, AlertTriangle, CheckCircle, Loader2, Brain, ArrowLeft, BookOpen, GraduationCap, Layers } from 'lucide-react';
+import { Clock, FileText, AlertTriangle, CheckCircle, Loader2, ArrowLeft, BookOpen, GraduationCap, Layers } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 import { VideoPlayer } from './VideoPlayer';
 import { SocraticChat } from './SocraticChat';
@@ -34,10 +34,26 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(analysis?.quizQuestions || []);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  const [dots, setDots] = useState('.');
   const videoPlayerRef = useRef<any>(null);
   
   const hasTranscript = transcript && transcript.length > 0;
   const isAnalyzing = processingStatus === 'analyzing';
+
+  // Animate dots during analyzing: . .. ... . .. ...
+  useEffect(() => {
+    if (!isAnalyzing) return;
+    
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '.') return '..';
+        if (prev === '..') return '...';
+        return '.';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
   const isComplete = processingStatus === 'complete' && analysis;
 
   // Initialize conversation when analysis is complete
@@ -146,14 +162,13 @@ export function VideoResultSocratic({ videoData, onReset }: VideoResultSocraticP
         }}
       >
         <div>
-          <Brain className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: 'var(--color-brand-primary)' }} />
           <h2 style={{ 
             fontSize: 'var(--font-size-xl)',
             fontWeight: 700,
             color: 'var(--color-text-primary)',
             marginBottom: 'var(--space-2)'
           }}>
-            Analyzing video...
+            Analyzing video{dots}
           </h2>
           <p style={{ 
             fontSize: 'var(--font-size-base)',

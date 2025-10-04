@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 export function StreakCounter() {
   const [streak, setStreak] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
   const [hoverOverlay, setHoverOverlay] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -26,6 +27,8 @@ export function StreakCounter() {
   }, []);
 
   const handleMouseEnter = () => {
+    setIsHovered(true);
+    
     // Create hover overlay with blur
     const overlay = document.createElement('div');
     overlay.id = 'streak-hover-overlay';
@@ -47,6 +50,8 @@ export function StreakCounter() {
   };
 
   const handleMouseLeave = () => {
+    setIsHovered(false);
+    
     // Remove hover class
     document.body.classList.remove('streak-hover');
 
@@ -57,48 +62,102 @@ export function StreakCounter() {
     }
   };
 
+  // Calculate elevation (50 meters per correct answer)
+  const metersPerAnswer = 50;
+  const currentElevation = streak * metersPerAnswer;
+
   return (
     <div 
-      className="streak-counter"
+      className="mountain-progress"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{
         position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        background: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(8px)',
-        padding: '12px 20px',
+        bottom: '24px',
+        right: '24px',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(12px)',
+        padding: '20px 24px',
         borderRadius: '12px',
-        border: '2px solid var(--color-border)',
-        boxShadow: 'var(--shadow-md)',
+        border: `2px solid ${isHovered ? 'var(--color-brand-primary)' : 'var(--color-border)'}`,
+        boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.12)' : '0 2px 8px rgba(0,0,0,0.08)',
         zIndex: 100000,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
         fontFamily: 'var(--font-sans)',
         cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        minWidth: '180px',
+        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
       }}
     >
-      <span style={{ fontSize: '24px' }}>🔥</span>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      {/* Header */}
+      <div style={{ 
+        marginBottom: '16px'
+      }}>
         <span style={{ 
-          fontSize: '24px', 
-          fontWeight: 'bold',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: 'var(--color-text-primary)',
+          letterSpacing: '0.3px'
+        }}>
+          Current Elevation
+        </span>
+      </div>
+
+      {/* Main elevation display */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: '8px',
+        marginBottom: '8px'
+      }}>
+        <span style={{ 
+          fontSize: '40px', 
+          fontWeight: '700',
           color: 'var(--color-brand-primary)',
-          lineHeight: '1'
+          lineHeight: '1',
+          letterSpacing: '-0.02em'
         }}>
-          {streak}
+          {currentElevation.toLocaleString()}
         </span>
         <span style={{ 
-          fontSize: '11px', 
-          color: 'var(--color-text-tertiary)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          lineHeight: '1'
+          fontSize: '16px', 
+          color: 'var(--color-text-secondary)',
+          fontWeight: '500',
+          letterSpacing: '0.3px'
         }}>
-          Streak
+          m
         </span>
+      </div>
+
+      {/* Correct answers count */}
+      <div style={{
+        fontSize: '13px',
+        color: 'var(--color-text-tertiary)',
+        marginBottom: '16px',
+        fontWeight: '500'
+      }}>
+        {streak} {streak === 1 ? 'answer' : 'answers'} correct
+      </div>
+
+      {/* Divider */}
+      <div style={{
+        width: '100%',
+        height: '1px',
+        background: 'var(--color-border)',
+        marginBottom: '12px'
+      }} />
+
+      {/* Hover hint */}
+      <div style={{
+        fontSize: '11px',
+        color: 'var(--color-text-muted)',
+        textAlign: 'center',
+        fontWeight: '500',
+        letterSpacing: '0.5px',
+        opacity: isHovered ? 1 : 0.6,
+        transition: 'opacity 0.2s ease'
+      }}>
+        {isHovered ? 'Watch the climb' : 'Hover to reveal'}
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LearningAnalysis, QuizQuestion, Flashcard as FlashcardType } from '@/types';
-import { Brain, Clock, Target, BookOpen, Play } from 'lucide-react';
+import { Clock, Target, BookOpen, Play } from 'lucide-react';
 import { formatTime } from '@/lib/youtube';
 import { QuizModal } from './QuizModal';
 import { FlashcardModal } from './FlashcardModal';
@@ -18,12 +18,28 @@ interface AnalysisResultProps {
 
 export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, transcript, videoTitle }: AnalysisResultProps) {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [dots, setDots] = useState('.');
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
 
   const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false);
   const [flashcards, setFlashcards] = useState<FlashcardType[]>([]);
+
+  // Animate dots during loading: . .. ... . .. ...
+  useEffect(() => {
+    if (!isLoading) return;
+    
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '.') return '..';
+        if (prev === '..') return '...';
+        return '.';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleGenerateFlashcards = () => {
     // Convert key concepts to flashcards
@@ -83,7 +99,6 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, tran
         }}
       >
         <div className="flex items-center" style={{ gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <Brain className="w-6 h-6 animate-pulse" style={{ color: 'var(--color-brand-primary)' }} />
           <h3 
             className="font-semibold"
             style={{ 
@@ -91,7 +106,7 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, tran
               color: 'var(--color-text-primary)' 
             }}
           >
-            Analyzing with Claude AI...
+            Analyzing with Claude AI{dots}
           </h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -116,7 +131,6 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, tran
         }}
       >
         <div className="flex items-center" style={{ gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <Brain className="w-6 h-6" style={{ color: 'var(--color-brand-primary)' }} />
           <h3 
             className="font-semibold"
             style={{ 
@@ -323,8 +337,7 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, tran
             >
               {isGeneratingQuiz ? (
                 <>
-                  <Brain className="w-4 h-4 animate-pulse" />
-                  Generating Quiz...
+                  Generating Quiz{dots}
                 </>
               ) : (
                 'Start Quiz →'
@@ -345,7 +358,6 @@ export function AnalysisResult({ analysis, isLoading = false, onJumpToTime, tran
             }}
           >
             <div className="flex items-start" style={{ gap: 'var(--space-2)' }}>
-              <Brain className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-brand-primary)', marginTop: '2px' }} />
               <div>
                 <h4 
                   className="font-semibold"

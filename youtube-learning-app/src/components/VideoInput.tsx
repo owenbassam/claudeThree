@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Sparkles, AlertCircle, FileText, Video } from 'lucide-react';
 
 interface VideoInputProps {
@@ -15,6 +15,22 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
   const [url, setUrl] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dots, setDots] = useState('.');
+
+  // Animate dots during loading: . .. ... . .. ...
+  useEffect(() => {
+    if (!isLoading) return;
+    
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '.') return '..';
+        if (prev === '..') return '...';
+        return '.';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +201,7 @@ export function VideoInput({ onAnalyze, onPDFUpload, isLoading = false, error }:
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Analyzing...</span>
+                <span>Analyzing{dots}</span>
               </>
             ) : (
               <>
